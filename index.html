@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Daily Commute & Expense Tracker</title>
+  <meta name="description" content="Effortless personal expense tracker optimized for daily travel (Auto, Bus, Train, Rapido) and routine daily food & snacks expenses.">
+  <meta name="theme-color" content="#0b0f19">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon-192.svg">
+  
+  <!-- Modern Typography from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="dark">
+  <div id="app" class="app-container">
+    
+    <!-- Top Header Bar -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="4"></rect>
+            <path d="M2 10h20"></path>
+            <circle cx="16" cy="15" r="1.5" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <div>
+          <h1 class="app-title">DailySpends</h1>
+          <p class="app-subtitle">Commute & Daily Expense Log</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="icon-btn" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
+          <span class="theme-icon-dark">🌙</span>
+          <span class="theme-icon-light" style="display:none;">☀️</span>
+        </button>
+        <button id="backupModalBtn" class="icon-btn" title="Backup & Export Data" aria-label="Backup and Data">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Month Navigation Bar -->
+    <section class="month-navigator">
+      <button id="prevMonthBtn" class="nav-arrow" aria-label="Previous Month">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      
+      <div class="month-label-wrap">
+        <span id="currentMonthLabel" class="month-label">October 2026</span>
+        <button id="jumpCurrentMonthBtn" class="badge-btn" style="display: none;">This Month</button>
+      </div>
+
+      <button id="nextMonthBtn" class="nav-arrow" aria-label="Next Month">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+    </section>
+
+    <!-- 1-Tap Quick Commute & Food Presets (Super easy on mobile) -->
+    <section class="quick-presets-section">
+      <div class="section-header">
+        <span class="section-title">⚡ Quick 1-Tap Add</span>
+        <span class="section-hint">Tap to log instantly</span>
+      </div>
+      <div class="preset-scroll-container">
+        <!-- Rapido -->
+        <button class="preset-chip chip-rapido" data-category="rapido" data-default="60">
+          <span class="chip-emoji">🛵</span>
+          <span class="chip-name">Rapido</span>
+          <span class="chip-tag">Bike</span>
+        </button>
+        <!-- Auto -->
+        <button class="preset-chip chip-auto" data-category="auto" data-default="80">
+          <span class="chip-emoji">🛺</span>
+          <span class="chip-name">Auto</span>
+          <span class="chip-tag">Rickshaw</span>
+        </button>
+        <!-- Bus -->
+        <button class="preset-chip chip-bus" data-category="bus" data-default="25">
+          <span class="chip-emoji">🚌</span>
+          <span class="chip-name">Bus</span>
+          <span class="chip-tag">Commute</span>
+        </button>
+        <!-- Train / Metro -->
+        <button class="preset-chip chip-train" data-category="train" data-default="35">
+          <span class="chip-emoji">🚆</span>
+          <span class="chip-name">Train</span>
+          <span class="chip-tag">Metro</span>
+        </button>
+        <!-- Snacks & Tea -->
+        <button class="preset-chip chip-tea" data-category="tea" data-default="20">
+          <span class="chip-emoji">☕</span>
+          <span class="chip-name">Tea & Snacks</span>
+          <span class="chip-tag">Chai / Puff</span>
+        </button>
+        <!-- Lunch & Food -->
+        <button class="preset-chip chip-food" data-category="food" data-default="120">
+          <span class="chip-emoji">🍱</span>
+          <span class="chip-name">Lunch / Food</span>
+          <span class="chip-tag">Meals</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Monthly Summary Overview Card -->
+    <section class="overview-cards-grid">
+      <!-- Total Spend Card -->
+      <div class="summary-card total-card">
+        <div class="card-glow"></div>
+        <div class="card-top">
+          <span class="card-meta">Total Spent in <span id="summaryMonthName">October</span></span>
+          <span class="stat-pill" id="totalTxCount">0 expenses</span>
+        </div>
+        <div class="card-hero-amount" id="monthlyTotalDisplay">₹0</div>
+        
+        <!-- Budget Progress Bar -->
+        <div class="budget-progress-container">
+          <div class="budget-meta">
+            <span>Budget: <strong id="budgetTotalDisplay">₹12,000</strong></span>
+            <span id="budgetRemainingDisplay" class="budget-rem-positive">₹0 left</span>
+          </div>
+          <div class="progress-bar-track">
+            <div id="budgetProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commute Focus Summary -->
+      <div class="summary-card travel-focus-card">
+        <div class="card-top">
+          <div class="category-icon-title">
+            <span class="cat-badge-icon travel-accent">🚀</span>
+            <span class="focus-title">Travel & Commute</span>
+          </div>
+          <span class="focus-amount" id="travelTotalDisplay">₹0</span>
+        </div>
+        <p class="focus-subtext" id="travelTripsCount">0 rides logged this month</p>
+        
+        <!-- Commute Sub-Category Pills -->
+        <div class="commute-mini-grid">
+          <div class="mini-stat-pill" id="statRapido">
+            <span class="icon">🛵</span>
+            <span class="label">Rapido</span>
+            <strong class="val" id="valRapido">₹0</strong>
+          </div>
+          <div class="mini-stat-pill" id="statAuto">
+            <span class="icon">🛺</span>
+            <span class="label">Auto</span>
+            <strong class="val" id="valAuto">₹0</strong>
+          </div>
+          <div class="mini-stat-pill" id="statBus">
+            <span class="icon">🚌</span>
+            <span class="label">Bus</span>
+            <strong class="val" id="valBus">₹0</strong>
+          </div>
+          <div class="mini-stat-pill" id="statTrain">
+            <span class="icon">🚆</span>
+            <span class="label">Train/Metro</span>
+            <strong class="val" id="valTrain">₹0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Food & Daily Focus Summary -->
+      <div class="summary-card food-focus-card">
+        <div class="card-top">
+          <div class="category-icon-title">
+            <span class="cat-badge-icon food-accent">🍵</span>
+            <span class="focus-title">Food & Refreshments</span>
+          </div>
+          <span class="focus-amount" id="foodTotalDisplay">₹0</span>
+        </div>
+        <p class="focus-subtext" id="foodItemsCount">0 food & snacks logged</p>
+        
+        <!-- Food Sub-Category Pills -->
+        <div class="commute-mini-grid two-col">
+          <div class="mini-stat-pill" id="statTea">
+            <span class="icon">☕</span>
+            <span class="label">Tea & Snacks</span>
+            <strong class="val" id="valTea">₹0</strong>
+          </div>
+          <div class="mini-stat-pill" id="statFood">
+            <span class="icon">🍱</span>
+            <span class="label">Lunch & Food</span>
+            <strong class="val" id="valFood">₹0</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main View Segment Switcher (Expenses List vs Analytics vs Budget) -->
+    <nav class="view-tabs" role="tablist">
+      <button class="tab-btn active" data-tab="tab-list" role="tab" id="tabListBtn">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+        <span>Expenses</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-analytics" role="tab" id="tabAnalyticsBtn">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+        <span>Monthly Stats</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-settings" role="tab" id="tabSettingsBtn">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <span>Budget & Backup</span>
+      </button>
+    </nav>
+
+    <!-- TAB 1: EXPENSES LIST VIEW -->
+    <div id="tab-list" class="tab-pane active">
+      <!-- Search & Category Filters -->
+      <div class="filters-bar">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="searchInput" placeholder="Search route, note, merchant..." autocomplete="off">
+          <button id="clearSearchBtn" class="clear-search-btn" style="display:none;">&times;</button>
+        </div>
+
+        <div class="category-filter-chips" id="categoryFilterContainer">
+          <button class="filter-chip active" data-filter="all">All</button>
+          <button class="filter-chip" data-filter="travel">🚀 All Travel</button>
+          <button class="filter-chip" data-filter="rapido">🛵 Rapido</button>
+          <button class="filter-chip" data-filter="auto">🛺 Auto</button>
+          <button class="filter-chip" data-filter="bus">🚌 Bus</button>
+          <button class="filter-chip" data-filter="train">🚆 Train</button>
+          <button class="filter-chip" data-filter="tea">☕ Tea/Snacks</button>
+          <button class="filter-chip" data-filter="food">🍱 Lunch</button>
+          <button class="filter-chip" data-filter="other">✨ Other</button>
+        </div>
+      </div>
+
+      <!-- Expense Items Grouped by Date -->
+      <div id="expensesListContainer" class="expenses-list">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </div>
+
+    <!-- TAB 2: MONTHLY ANALYTICS -->
+    <div id="tab-analytics" class="tab-pane">
+      <div class="analytics-container">
+        <!-- Commute Mode Share Card -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Commute Breakdown</h3>
+            <span class="sub-badge" id="travelTotalAnalytics">₹0</span>
+          </div>
+          <p class="chart-desc">How you spent across different travel modes this month</p>
+          
+          <div class="bar-breakdown-list" id="travelModeBars">
+            <!-- Dynamic travel progress bars -->
+          </div>
+        </div>
+
+        <!-- Overall Category Share Donut / Bar -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Category Breakdown</h3>
+            <span class="sub-badge">All Expenses</span>
+          </div>
+          <div class="category-donut-wrapper">
+            <div class="donut-chart-box">
+              <svg id="donutSvg" viewBox="0 0 120 120" width="120" height="120"></svg>
+              <div class="donut-center-text">
+                <span id="donutCenterAmount">₹0</span>
+                <small>Total</small>
+              </div>
+            </div>
+            <div class="donut-legend" id="donutLegend">
+              <!-- Dynamic legend -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Spending Trend -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Daily Spend Trend</h3>
+            <span class="sub-badge" id="avgDailySpend">Avg: ₹0/day</span>
+          </div>
+          <p class="chart-desc">Daily expenditures across the month</p>
+          <div class="daily-chart-container" id="dailyChartContainer">
+            <!-- Dynamic day bars -->
+          </div>
+        </div>
+
+        <!-- Travel Trip Insights -->
+        <div class="chart-card stats-summary-grid">
+          <div class="stat-box">
+            <span class="stat-number" id="insightTotalRides">0</span>
+            <span class="stat-title">Total Rides</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="insightAvgRideCost">₹0</span>
+            <span class="stat-title">Avg per Ride</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="insightTeaCount">0</span>
+            <span class="stat-title">Chai & Snacks</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="insightFoodCount">0</span>
+            <span class="stat-title">Meals / Lunch</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: BUDGET & SETTINGS -->
+    <div id="tab-settings" class="tab-pane">
+      <div class="settings-container">
+        <!-- Budget Setting -->
+        <div class="settings-card">
+          <h3>Monthly Budget Limit</h3>
+          <p class="settings-desc">Set your total monthly spending target to track warnings</p>
+          <div class="budget-input-row">
+            <div class="amount-field-wrap">
+              <span class="currency-prefix">₹</span>
+              <input type="number" id="budgetInput" min="500" step="500" value="12000">
+            </div>
+            <button id="saveBudgetBtn" class="btn btn-primary">Save Budget</button>
+          </div>
+        </div>
+
+        <!-- Currency Setting -->
+        <div class="settings-card">
+          <h3>Currency Symbol</h3>
+          <p class="settings-desc">Select your preferred currency symbol</p>
+          <div class="currency-options" id="currencyOptions">
+            <button class="curr-btn active" data-currency="₹">₹ (INR Rupee)</button>
+            <button class="curr-btn" data-currency="$">$ (USD)</button>
+            <button class="curr-btn" data-currency="€">€ (EUR)</button>
+            <button class="curr-btn" data-currency="£">£ (GBP)</button>
+            <button class="curr-btn" data-currency="AED">AED</button>
+          </div>
+        </div>
+
+        <!-- Data Export & Import -->
+        <div class="settings-card">
+          <h3>Data Management & Backup</h3>
+          <p class="settings-desc">Export your records for Excel or backup/restore on other devices</p>
+          
+          <div class="data-actions-grid">
+            <button id="exportCsvBtn" class="btn btn-outline">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Export CSV (Excel)
+            </button>
+            <button id="exportJsonBtn" class="btn btn-outline">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              Backup JSON
+            </button>
+            <label class="btn btn-outline file-label">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Restore JSON
+              <input type="file" id="importJsonInput" accept=".json" style="display:none;">
+            </label>
+            <button id="loadSampleDataBtn" class="btn btn-outline">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+              Load Demo Commute Data
+            </button>
+          </div>
+
+          <div style="margin-top: 18px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+            <button id="clearAllDataBtn" class="btn btn-danger-outline">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Clear All Records
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Action Button for Mobile Add -->
+    <button id="fabAddBtn" class="floating-add-btn" aria-label="Add New Expense">
+      <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.6" fill="none">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span class="fab-text">Add Expense</span>
+    </button>
+
+    <!-- Bottom Sheet / Modal: Add & Edit Expense -->
+    <div id="expenseModalOverlay" class="modal-overlay" style="display: none;">
+      <div class="bottom-sheet" id="expenseBottomSheet">
+        <div class="sheet-handle-bar">
+          <div class="sheet-handle"></div>
+        </div>
+
+        <div class="sheet-header">
+          <h2 id="modalTitle">Log Expense</h2>
+          <button id="closeModalBtn" class="modal-close-btn" aria-label="Close">&times;</button>
+        </div>
+
+        <form id="expenseForm" class="sheet-form" onsubmit="return false;">
+          <!-- Amount Input Section -->
+          <div class="amount-input-group">
+            <span class="amount-currency" id="formCurrencyPrefix">₹</span>
+            <input type="number" id="formAmount" inputmode="decimal" placeholder="0" min="1" step="any" required autofocus>
+          </div>
+
+          <!-- Quick Amount Chips for fast mobile taps -->
+          <div class="amount-quick-chips">
+            <button type="button" class="amt-chip" data-amt="10">+10</button>
+            <button type="button" class="amt-chip" data-amt="20">+20</button>
+            <button type="button" class="amt-chip" data-amt="50">+50</button>
+            <button type="button" class="amt-chip" data-amt="100">+100</button>
+            <button type="button" class="amt-chip" data-amt="150">+150</button>
+            <button type="button" class="amt-chip" data-amt="200">+200</button>
+          </div>
+
+          <!-- Category Selection Grid -->
+          <label class="form-section-label">Select Category</label>
+          <div class="category-selector-grid" id="categorySelector">
+            <div class="cat-option" data-cat="rapido">
+              <span class="cat-icon">🛵</span>
+              <span class="cat-text">Rapido</span>
+            </div>
+            <div class="cat-option" data-cat="auto">
+              <span class="cat-icon">🛺</span>
+              <span class="cat-text">Auto</span>
+            </div>
+            <div class="cat-option" data-cat="bus">
+              <span class="cat-icon">🚌</span>
+              <span class="cat-text">Bus</span>
+            </div>
+            <div class="cat-option" data-cat="train">
+              <span class="cat-icon">🚆</span>
+              <span class="cat-text">Train/Metro</span>
+            </div>
+            <div class="cat-option" data-cat="tea">
+              <span class="cat-icon">☕</span>
+              <span class="cat-text">Tea & Snacks</span>
+            </div>
+            <div class="cat-option" data-cat="food">
+              <span class="cat-icon">🍱</span>
+              <span class="cat-text">Lunch/Meals</span>
+            </div>
+            <div class="cat-option" data-cat="fuel">
+              <span class="cat-icon">⛽</span>
+              <span class="cat-text">Fuel/Petrol</span>
+            </div>
+            <div class="cat-option" data-cat="groceries">
+              <span class="cat-icon">🛒</span>
+              <span class="cat-text">Groceries</span>
+            </div>
+            <div class="cat-option" data-cat="bills">
+              <span class="cat-icon">📱</span>
+              <span class="cat-text">Recharge/Bills</span>
+            </div>
+            <div class="cat-option" data-cat="other">
+              <span class="cat-icon">✨</span>
+              <span class="cat-text">Other</span>
+            </div>
+          </div>
+
+          <!-- Route / Notes Input -->
+          <div class="form-field">
+            <label for="formNote">Route / Note / Merchant</label>
+            <input type="text" id="formNote" placeholder="e.g. Office to Home, Chai with team, Majestic metro pass" autocomplete="off">
+          </div>
+
+          <!-- Date & Quick Date Toggles -->
+          <div class="form-row">
+            <div class="form-field flex-1">
+              <label for="formDate">Date</label>
+              <input type="date" id="formDate" required>
+            </div>
+            <div class="quick-date-toggles">
+              <button type="button" class="date-chip active" id="dateTodayBtn">Today</button>
+              <button type="button" class="date-chip" id="dateYesterdayBtn">Yesterday</button>
+            </div>
+          </div>
+
+          <!-- Payment Mode -->
+          <div class="form-field">
+            <label>Payment Mode</label>
+            <div class="payment-modes" id="paymentModes">
+              <button type="button" class="pay-chip active" data-mode="UPI">📱 UPI / GPay / PhonePe</button>
+              <button type="button" class="pay-chip" data-mode="Cash">💵 Cash</button>
+              <button type="button" class="pay-chip" data-mode="Metro Card">💳 Metro Card</button>
+              <button type="button" class="pay-chip" data-mode="Card">💳 Card</button>
+            </div>
+          </div>
+
+          <!-- Hidden Input for Editing ID -->
+          <input type="hidden" id="formEditId" value="">
+
+          <!-- Action Buttons -->
+          <div class="modal-form-actions">
+            <button type="button" id="cancelFormBtn" class="btn btn-outline flex-1">Cancel</button>
+            <button type="submit" id="saveExpenseBtn" class="btn btn-primary flex-2">
+              <span id="saveBtnText">Save Expense</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Notification Popup -->
+    <div id="toastNotification" class="toast-popup" style="display: none;">
+      <span id="toastIcon">✅</span>
+      <span id="toastMessage">Expense saved!</span>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

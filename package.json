@@ -1,0 +1,12 @@
+{
+  "name": "daily-commute-expense-tracker",
+  "version": "1.0.0",
+  "description": "Mobile-friendly personal expense tracker tailored for daily travel (Auto, Bus, Train, Rapido) and routine expenses (Tea, Snacks, Lunch).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["expense-tracker", "travel-expenses", "rapido", "auto", "commute", "budget"],
+  "author": "",
+  "license": "MIT"
+}
