@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Login - DailySpends Commute & Expense Tracker</title>
+  <meta name="description" content="Sign in to your DailySpends account to track your daily commute rides, transit tickets, chai breaks, and expenses.">
+  <meta name="theme-color" content="#0a0d14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon-192.svg">
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="dark" class="auth-page">
+
+  <!-- Top Navigation (Theme Toggle) -->
+  <div class="auth-nav-top">
+    <button id="themeToggleBtn" class="icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
+      <span class="theme-icon-dark">🌙</span>
+      <span class="theme-icon-light" style="display:none;">☀️</span>
+    </button>
+  </div>
+
+  <div class="auth-card-wrapper">
+    <div class="auth-card">
+      
+      <!-- Brand & Title Header -->
+      <header class="auth-header">
+        <div class="auth-brand-logo">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="4"></rect>
+            <path d="M2 10h20"></path>
+            <circle cx="16" cy="15" r="1.5" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <h1 class="auth-title">DailySpends</h1>
+        <p class="auth-subtitle" id="authSubtitle">Track your daily rides, metro, chai & expenses</p>
+      </header>
+
+      <!-- Segmented Tabs: Sign In / Create Account -->
+      <div class="auth-tabs" role="tablist">
+        <button id="tabSignIn" class="auth-tab-btn active" role="tab" aria-selected="true">
+          <span>Sign In</span>
+        </button>
+        <button id="tabSignUp" class="auth-tab-btn" role="tab" aria-selected="false">
+          <span>Create Account</span>
+        </button>
+      </div>
+
+      <!-- ================= SIGN IN FORM ================= -->
+      <form id="signInForm" class="auth-form" onsubmit="return false;">
+        <!-- Email Field -->
+        <div class="auth-field">
+          <label class="auth-label" for="signInEmail">Email or Username</label>
+          <div class="auth-input-wrap">
+            <span class="input-icon-left">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </span>
+            <input 
+              type="email" 
+              id="signInEmail" 
+              class="auth-input" 
+              placeholder="name@example.com" 
+              required 
+              autocomplete="email"
+            >
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="auth-field">
+          <div class="auth-label">
+            <label for="signInPassword">Password</label>
+            <button type="button" id="forgotPasswordBtn" class="auth-link">Forgot password?</button>
+          </div>
+          <div class="auth-input-wrap">
+            <span class="input-icon-left">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+            <input 
+              type="password" 
+              id="signInPassword" 
+              class="auth-input has-right-btn" 
+              placeholder="••••••••" 
+              required 
+              autocomplete="current-password"
+            >
+            <button type="button" class="toggle-password-btn" data-target="signInPassword" title="Show/Hide Password" aria-label="Toggle password visibility">
+              <svg class="eye-open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-closed" style="display:none;" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Options: Remember Me -->
+        <div class="auth-options-row">
+          <label class="checkbox-container">
+            <input type="checkbox" id="rememberMe" checked>
+            <span>Keep me signed in</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submitSignInBtn" class="btn-auth-primary">
+          <span>Sign In</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </form>
+
+      <!-- ================= SIGN UP FORM ================= -->
+      <form id="signUpForm" class="auth-form" style="display: none;" onsubmit="return false;">
+        <!-- Full Name -->
+        <div class="auth-field">
+          <label class="auth-label" for="signUpName">Full Name</label>
+          <div class="auth-input-wrap">
+            <span class="input-icon-left">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+            <input 
+              type="text" 
+              id="signUpName" 
+              class="auth-input" 
+              placeholder="e.g. Alex Morgan" 
+              required
+              autocomplete="name"
+            >
+          </div>
+        </div>
+
+        <!-- Email Field -->
+        <div class="auth-field">
+          <label class="auth-label" for="signUpEmail">Email Address</label>
+          <div class="auth-input-wrap">
+            <span class="input-icon-left">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </span>
+            <input 
+              type="email" 
+              id="signUpEmail" 
+              class="auth-input" 
+              placeholder="name@example.com" 
+              required
+              autocomplete="email"
+            >
+          </div>
+        </div>
+
+        <!-- Daily Commute Preference -->
+        <div class="auth-field">
+          <label class="auth-label">Primary Daily Commute</label>
+          <div class="commute-pref-grid" id="commutePrefGrid">
+            <div class="commute-pref-option selected" data-pref="rapido">
+              <span class="commute-pref-icon">🛵</span>
+              <span class="commute-pref-name">Rapido</span>
+            </div>
+            <div class="commute-pref-option" data-pref="auto">
+              <span class="commute-pref-icon">🛺</span>
+              <span class="commute-pref-name">Auto</span>
+            </div>
+            <div class="commute-pref-option" data-pref="bus">
+              <span class="commute-pref-icon">🚌</span>
+              <span class="commute-pref-name">Bus</span>
+            </div>
+            <div class="commute-pref-option" data-pref="train">
+              <span class="commute-pref-icon">🚆</span>
+              <span class="commute-pref-name">Metro</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="auth-field">
+          <label class="auth-label" for="signUpPassword">Password</label>
+          <div class="auth-input-wrap">
+            <span class="input-icon-left">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+            <input 
+              type="password" 
+              id="signUpPassword" 
+              class="auth-input has-right-btn" 
+              placeholder="Min 6 characters" 
+              required
+              autocomplete="new-password"
+            >
+            <button type="button" class="toggle-password-btn" data-target="signUpPassword" title="Show/Hide Password" aria-label="Toggle password visibility">
+              <svg class="eye-open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-closed" style="display:none;" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+          <!-- Strength Indicator -->
+          <div class="password-strength" id="passwordStrength">
+            <div class="strength-bar-wrap">
+              <div class="strength-bar-fill" id="strengthBarFill"></div>
+            </div>
+            <span class="strength-label" id="strengthLabel">Too short</span>
+          </div>
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="auth-field">
+          <label class="auth-label" for="signUpConfirmPassword">Confirm Password</label>
+          <div class="auth-input-wrap">
+            <span class="input-icon-left">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </span>
+            <input 
+              type="password" 
+              id="signUpConfirmPassword" 
+              class="auth-input has-right-btn" 
+              placeholder="Confirm password" 
+              required
+              autocomplete="new-password"
+            >
+            <button type="button" class="toggle-password-btn" data-target="signUpConfirmPassword" title="Show/Hide Password" aria-label="Toggle password visibility">
+              <svg class="eye-open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-closed" style="display:none;" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submitSignUpBtn" class="btn-auth-primary">
+          <span>Create Account</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <p class="demo-hint-text" style="margin-top: 6px;">
+          Already have an account? <button type="button" id="switchToSignInBtn" class="auth-link">Sign In here</button>
+        </p>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Recovery / Forgot Password Modal -->
+  <div id="recoveryModal" class="auth-recovery-modal" style="display: none;">
+    <div class="auth-recovery-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">Reset Password</h3>
+        <button id="closeRecoveryBtn" class="modal-close-btn" style="position: static; font-size: 1.5rem; background: none; border: none; color: var(--text-muted); cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.4;">
+        Enter your registered email address to reset your password.
+      </p>
+      <div class="auth-field" style="margin-bottom: 14px;">
+        <label class="auth-label" for="recoveryEmail">Email Address</label>
+        <input type="email" id="recoveryEmail" class="auth-input" style="padding-left: 14px;" placeholder="name@example.com">
+      </div>
+      <div class="auth-field" style="margin-bottom: 16px;" id="recoveryNewPassGroup">
+        <label class="auth-label" for="recoveryNewPassword">New Password (Local mode only)</label>
+        <input type="password" id="recoveryNewPassword" class="auth-input" style="padding-left: 14px;" placeholder="Min 6 characters">
+      </div>
+      <button type="button" id="submitResetPasswordBtn" class="btn-auth-primary" style="margin-top: 0;">
+        Send Password Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="toast-popup" style="display: none;">
+    <span id="toastIcon">✨</span>
+    <span id="toastMessage">Welcome back!</span>
+  </div>
+
+  <!-- Firebase SDKs (Compat version for zero-bundler setup) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- App Services -->
+  <script src="firebase-config.js"></script>
+  <script src="db.js"></script>
+  <script src="auth.js"></script>
+
+  <script>
+    (function() {
+      // 1. Check if already logged in
+      if (window.Auth && window.Auth.isAuthenticated()) {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('logout') === 'true') {
+          window.Auth.logout(null);
+          showToast('👋 You have been safely logged out.', '👋');
+        } else {
+          window.Auth.redirectIfAuthenticated('index.html');
+          return;
+        }
+      }
+
+      // 2. Theme Toggle Handling
+      const savedSettings = localStorage.getItem('dailyspends_settings_v1');
+      let currentTheme = 'dark';
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          if (parsed.theme) currentTheme = parsed.theme;
+        } catch(e) {}
+      }
+      document.body.setAttribute('data-theme', currentTheme);
+      updateThemeIcons(currentTheme);
+
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+          currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          document.body.setAttribute('data-theme', currentTheme);
+          updateThemeIcons(currentTheme);
+          try {
+            let settings = {};
+            if (savedSettings) settings = JSON.parse(savedSettings);
+            settings.theme = currentTheme;
+            localStorage.setItem('dailyspends_settings_v1', JSON.stringify(settings));
+          } catch(e) {}
+        });
+      }
+
+      function updateThemeIcons(theme) {
+        const darkIcon = document.querySelector('.theme-icon-dark');
+        const lightIcon = document.querySelector('.theme-icon-light');
+        if (darkIcon && lightIcon) {
+          if (theme === 'dark') {
+            darkIcon.style.display = 'inline-block';
+            lightIcon.style.display = 'none';
+          } else {
+            darkIcon.style.display = 'none';
+            lightIcon.style.display = 'inline-block';
+          }
+        }
+      }
+
+      // 3. Tab Switching
+      const tabSignIn = document.getElementById('tabSignIn');
+      const tabSignUp = document.getElementById('tabSignUp');
+      const signInForm = document.getElementById('signInForm');
+      const signUpForm = document.getElementById('signUpForm');
+      const authSubtitle = document.getElementById('authSubtitle');
+      const switchToSignInBtn = document.getElementById('switchToSignInBtn');
+
+      function showSignInTab() {
+        tabSignIn.classList.add('active');
+        tabSignUp.classList.remove('active');
+        tabSignIn.setAttribute('aria-selected', 'true');
+        tabSignUp.setAttribute('aria-selected', 'false');
+        signInForm.style.display = 'flex';
+        signUpForm.style.display = 'none';
+        authSubtitle.textContent = 'Track your daily rides, metro, chai & expenses';
+      }
+
+      function showSignUpTab() {
+        tabSignUp.classList.add('active');
+        tabSignIn.classList.remove('active');
+        tabSignUp.setAttribute('aria-selected', 'true');
+        tabSignIn.setAttribute('aria-selected', 'false');
+        signUpForm.style.display = 'flex';
+        signInForm.style.display = 'none';
+        authSubtitle.textContent = 'Create your account & take control of daily commute costs';
+      }
+
+      tabSignIn.addEventListener('click', showSignInTab);
+      tabSignUp.addEventListener('click', showSignUpTab);
+      if (switchToSignInBtn) switchToSignInBtn.addEventListener('click', showSignInTab);
+
+      // 4. Password Visibility Toggles
+      document.querySelectorAll('.toggle-password-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-target');
+          const input = document.getElementById(targetId);
+          if (!input) return;
+          const openIcon = btn.querySelector('.eye-open');
+          const closedIcon = btn.querySelector('.eye-closed');
+          
+          if (input.type === 'password') {
+            input.type = 'text';
+            if (openIcon) openIcon.style.display = 'none';
+            if (closedIcon) closedIcon.style.display = 'inline-block';
+          } else {
+            input.type = 'password';
+            if (openIcon) openIcon.style.display = 'inline-block';
+            if (closedIcon) closedIcon.style.display = 'none';
+          }
+        });
+      });
+
+      // 5. Commute Preference Selector
+      let selectedCommutePref = 'rapido';
+      const commuteOptions = document.querySelectorAll('.commute-pref-option');
+      commuteOptions.forEach(opt => {
+        opt.addEventListener('click', () => {
+          commuteOptions.forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          selectedCommutePref = opt.getAttribute('data-pref');
+        });
+      });
+
+      // 6. Password Strength Meter
+      const signUpPassword = document.getElementById('signUpPassword');
+      const strengthBarFill = document.getElementById('strengthBarFill');
+      const strengthLabel = document.getElementById('strengthLabel');
+
+      signUpPassword.addEventListener('input', () => {
+        const val = signUpPassword.value;
+        if (!val) {
+          strengthBarFill.style.width = '0%';
+          strengthLabel.textContent = 'Too short';
+          strengthLabel.style.color = 'var(--text-muted)';
+          return;
+        }
+
+        let score = 0;
+        if (val.length >= 6) score += 25;
+        if (val.length >= 10) score += 25;
+        if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score += 25;
+        if (/[0-9]/.test(val) || /[^A-Za-z0-9]/.test(val)) score += 25;
+
+        strengthBarFill.style.width = score + '%';
+        if (score <= 25) {
+          strengthBarFill.style.background = '#ef4444';
+          strengthLabel.textContent = 'Weak';
+          strengthLabel.style.color = '#ef4444';
+        } else if (score <= 50) {
+          strengthBarFill.style.background = '#f59e0b';
+          strengthLabel.textContent = 'Fair';
+          strengthLabel.style.color = '#f59e0b';
+        } else if (score <= 75) {
+          strengthBarFill.style.background = '#38bdf8';
+          strengthLabel.textContent = 'Good';
+          strengthLabel.style.color = '#38bdf8';
+        } else {
+          strengthBarFill.style.background = '#10b981';
+          strengthLabel.textContent = 'Strong';
+          strengthLabel.style.color = '#10b981';
+        }
+      });
+
+      // 7. Sign In Handler
+      const signInEmailInput = document.getElementById('signInEmail');
+      const signInPasswordInput = document.getElementById('signInPassword');
+      const rememberMeCheckbox = document.getElementById('rememberMe');
+      const submitSignInBtn = document.getElementById('submitSignInBtn');
+
+      signInForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = signInEmailInput.value.trim();
+        const password = signInPasswordInput.value;
+        const remember = rememberMeCheckbox.checked;
+
+        submitSignInBtn.disabled = true;
+        submitSignInBtn.innerHTML = `<span>Signing In...</span>`;
+
+        try {
+          const res = await window.Auth.login(email, password, remember);
+          if (res.success) {
+            showToast(`🎉 Welcome back, ${res.user.name}!`, '🎉');
+            setTimeout(() => {
+              window.Auth.redirectIfAuthenticated('index.html');
+            }, 500);
+          } else {
+            showToast(res.error, '⚠️');
+            submitSignInBtn.disabled = false;
+            submitSignInBtn.innerHTML = `<span>Sign In</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>`;
+          }
+        } catch (err) {
+          showToast('An error occurred during sign in.', '⚠️');
+          submitSignInBtn.disabled = false;
+          submitSignInBtn.innerHTML = `<span>Sign In</span>`;
+        }
+      });
+
+      // 8. Sign Up Handler
+      const signUpName = document.getElementById('signUpName');
+      const signUpEmail = document.getElementById('signUpEmail');
+      const signUpConfirmPassword = document.getElementById('signUpConfirmPassword');
+      const submitSignUpBtn = document.getElementById('submitSignUpBtn');
+
+      signUpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = signUpName.value.trim();
+        const email = signUpEmail.value.trim();
+        const password = signUpPassword.value;
+        const confirmPassword = signUpConfirmPassword.value;
+
+        if (password !== confirmPassword) {
+          showToast('Passwords do not match! Please verify.', '⚠️');
+          return;
+        }
+
+        submitSignUpBtn.disabled = true;
+        submitSignUpBtn.innerHTML = `<span>Creating Account...</span>`;
+
+        try {
+          const res = await window.Auth.register({
+            name,
+            email,
+            password,
+            commutePref: selectedCommutePref
+          });
+
+          if (res.success) {
+            showToast(`✨ Account created! Welcome, ${res.user.name}!`, '✨');
+            setTimeout(() => {
+              window.location.href = 'index.html';
+            }, 600);
+          } else {
+            showToast(res.error, '⚠️');
+            submitSignUpBtn.disabled = false;
+            submitSignUpBtn.innerHTML = `<span>Create Account</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>`;
+          }
+        } catch (err) {
+          showToast('An error occurred during registration.', '⚠️');
+          submitSignUpBtn.disabled = false;
+          submitSignUpBtn.innerHTML = `<span>Create Account</span>`;
+        }
+      });
+
+      // 9. Password Reset / Forgot Password Modal
+      const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+      const recoveryModal = document.getElementById('recoveryModal');
+      const closeRecoveryBtn = document.getElementById('closeRecoveryBtn');
+      const recoveryEmail = document.getElementById('recoveryEmail');
+      const recoveryNewPassword = document.getElementById('recoveryNewPassword');
+      const submitResetPasswordBtn = document.getElementById('submitResetPasswordBtn');
+
+      forgotPasswordBtn.addEventListener('click', () => {
+        recoveryEmail.value = signInEmailInput.value || '';
+        recoveryModal.style.display = 'flex';
+      });
+
+      closeRecoveryBtn.addEventListener('click', () => {
+        recoveryModal.style.display = 'none';
+      });
+
+      recoveryModal.addEventListener('click', (e) => {
+        if (e.target === recoveryModal) recoveryModal.style.display = 'none';
+      });
+
+      submitResetPasswordBtn.addEventListener('click', async () => {
+        const email = recoveryEmail.value.trim();
+        const newPass = recoveryNewPassword.value;
+        if (!email) {
+          showToast('Please enter your email.', '⚠️');
+          return;
+        }
+
+        submitResetPasswordBtn.disabled = true;
+        submitResetPasswordBtn.textContent = 'Sending...';
+
+        try {
+          const res = await window.Auth.resetPassword(email, newPass);
+          submitResetPasswordBtn.disabled = false;
+          submitResetPasswordBtn.textContent = 'Send Password Reset';
+
+          if (res.success) {
+            showToast(res.message || '🔑 Password reset instructions sent!', '✅');
+            setTimeout(() => {
+              recoveryModal.style.display = 'none';
+            }, 1200);
+          } else {
+            showToast(res.error, '⚠️');
+          }
+        } catch (err) {
+          submitResetPasswordBtn.disabled = false;
+          submitResetPasswordBtn.textContent = 'Send Password Reset';
+          showToast('Failed to reset password.', '⚠️');
+        }
+      });
+
+      // Toast Notification Helper
+      let toastTimer = null;
+      function showToast(message, icon = '✨') {
+        const toast = document.getElementById('toastNotification');
+        const msg = document.getElementById('toastMessage');
+        const ic = document.getElementById('toastIcon');
+        if (!toast || !msg) return;
+
+        msg.textContent = message;
+        if (ic) ic.textContent = icon;
+        toast.style.display = 'flex';
+
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.style.display = 'none';
+        }, 3200);
+      }
+
+    })();
+  </script>
+</body>
+</html>

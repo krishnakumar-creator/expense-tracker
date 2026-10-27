@@ -34,6 +34,8 @@ function getLocalIpAddresses() {
 const server = http.createServer((req, res) => {
   let reqUrl = req.url.split('?')[0];
   if (reqUrl === '/') reqUrl = '/index.html';
+  if (reqUrl === '/login') reqUrl = '/login.html';
+  if (reqUrl === '/app') reqUrl = '/index.html';
 
   const filePath = path.join(PUBLIC_DIR, reqUrl);
 

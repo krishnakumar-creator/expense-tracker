@@ -109,8 +109,14 @@ const CATEGORIES = {
   }
 };
 
-const STORAGE_KEY = 'dailyspends_data_v1';
-const SETTINGS_KEY = 'dailyspends_settings_v1';
+function getStorageKey() {
+  const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
+  return user ? `dailyspends_data_${user.id}` : 'dailyspends_data_v1';
+}
+function getSettingsKey() {
+  const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
+  return user ? `dailyspends_settings_${user.id}` : 'dailyspends_settings_v1';
+}
 
 // ==========================================
 // 2. APPLICATION STATE
@@ -291,9 +297,16 @@ function generateDemoData() {
 // ==========================================
 // 4. STORAGE & INITIALIZATION
 // ==========================================
-function loadStoredData() {
+async function loadStoredData() {
   try {
-    const rawData = localStorage.getItem(STORAGE_KEY);
+    const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
+    let rawData = localStorage.getItem(getStorageKey());
+    if (!rawData) {
+      const legacyData = localStorage.getItem('dailyspends_data_v1');
+      if (legacyData && (!user || user.id === 'usr_alex' || user.id === 'usr_guest')) {
+        rawData = legacyData;
+      }
+    }
     if (rawData) {
       state.expenses = JSON.parse(rawData);
     } else {
@@ -302,9 +315,38 @@ function loadStoredData() {
       saveExpensesToStorage();
     }
 
-    const rawSettings = localStorage.getItem(SETTINGS_KEY);
+    const rawSettings = localStorage.getItem(getSettingsKey()) || localStorage.getItem('dailyspends_settings_v1');
     if (rawSettings) {
       state.settings = { ...state.settings, ...JSON.parse(rawSettings) };
+    }
+
+    // Sync with Cloud Firestore if available
+    if (window.AppDB && window.AppDB.isCloudActive() && user) {
+      try {
+        const cloudExpenses = await window.AppDB.loadExpenses(user.id);
+        if (cloudExpenses && cloudExpenses.length > 0) {
+          state.expenses = cloudExpenses;
+          refreshAllViews();
+        } else if (state.expenses && state.expenses.length > 0) {
+          window.AppDB.batchSaveExpenses(user.id, state.expenses);
+        }
+
+        const cloudSettings = await window.AppDB.loadSettings(user.id);
+        if (cloudSettings) {
+          state.settings = { ...state.settings, ...cloudSettings };
+          applySettings();
+          refreshAllViews();
+        }
+
+        window.AppDB.subscribeExpenses(user.id, (updated) => {
+          if (Array.isArray(updated) && updated.length > 0) {
+            state.expenses = updated;
+            refreshAllViews();
+          }
+        });
+      } catch (cloudErr) {
+        console.warn('Cloud DB sync notice:', cloudErr);
+      }
     }
   } catch (err) {
     console.error('Failed to load storage:', err);
@@ -314,7 +356,11 @@ function loadStoredData() {
 
 function saveExpensesToStorage() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.expenses));
+    localStorage.setItem(getStorageKey(), JSON.stringify(state.expenses));
+    const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
+    if (window.AppDB && window.AppDB.isCloudActive() && user) {
+      window.AppDB.batchSaveExpenses(user.id, state.expenses);
+    }
   } catch (err) {
     console.error('Failed to save expenses:', err);
   }
@@ -322,7 +368,11 @@ function saveExpensesToStorage() {
 
 function saveSettingsToStorage() {
   try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+    localStorage.setItem(getSettingsKey(), JSON.stringify(state.settings));
+    const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
+    if (window.AppDB && window.AppDB.isCloudActive() && user) {
+      window.AppDB.saveSettings(user.id, state.settings);
+    }
   } catch (err) {
     console.error('Failed to save settings:', err);
   }
@@ -961,6 +1011,10 @@ function deleteExpense(id) {
   if (confirm('Delete this expense entry?')) {
     state.expenses = state.expenses.filter(x => x.id !== id);
     saveExpensesToStorage();
+    const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
+    if (window.AppDB && window.AppDB.isCloudActive() && user) {
+      window.AppDB.deleteExpense(user.id, id);
+    }
     refreshAllViews();
     showToast('🗑️ Expense deleted');
   }
@@ -1305,6 +1359,9 @@ function setupEventListeners() {
   document.getElementById('loadSampleDataBtn').addEventListener('click', resetToSampleData);
   document.getElementById('clearAllDataBtn').addEventListener('click', clearAllData);
 
+  // User Profile Dropdown & Session Events
+  setupUserProfileEvents();
+
   // Keyboard Shortcuts (Escape closes modal)
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
@@ -1314,9 +1371,91 @@ function setupEventListeners() {
 }
 
 // ==========================================
+function setupUserProfileEvents() {
+  const container = document.getElementById('userProfileMenuContainer');
+  const btn = document.getElementById('userProfileBtn');
+  const switchAccountBtn = document.getElementById('switchAccountBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  if (btn && container) {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      container.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!container.contains(e.target)) {
+        container.classList.remove('open');
+      }
+    });
+  }
+
+  if (switchAccountBtn) {
+    switchAccountBtn.addEventListener('click', () => {
+      if (window.Auth) {
+        window.Auth.logout('login.html');
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      if (window.Auth) {
+        window.Auth.logout('login.html?logout=true');
+      } else {
+        window.location.href = 'login.html?logout=true';
+      }
+    });
+  }
+}
+
+function renderUserProfile() {
+  const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : {
+    name: 'Alex Morgan',
+    email: 'alex@dailyspends.app',
+    avatar: '🛵',
+    commutePref: 'rapido'
+  };
+
+  const userAvatarCircle = document.getElementById('userAvatarCircle');
+  const userProfileName = document.getElementById('userProfileName');
+  const menuUserAvatarCircle = document.getElementById('menuUserAvatarCircle');
+  const menuUserName = document.getElementById('menuUserName');
+  const menuUserEmail = document.getElementById('menuUserEmail');
+  const menuUserCommutePill = document.getElementById('menuUserCommutePill');
+
+  const firstName = user.name ? user.name.split(' ')[0] : 'User';
+  const pref = user.commutePref || 'commute';
+  const prefFormatted = pref.charAt(0).toUpperCase() + pref.slice(1);
+
+  if (userAvatarCircle) userAvatarCircle.textContent = user.avatar || '🛵';
+  if (userProfileName) userProfileName.textContent = firstName;
+  if (menuUserAvatarCircle) menuUserAvatarCircle.textContent = user.avatar || '🛵';
+  if (menuUserName) menuUserName.textContent = user.name || 'User';
+  if (menuUserEmail) menuUserEmail.textContent = user.email || '';
+  if (menuUserCommutePill) menuUserCommutePill.textContent = `${user.avatar || '🛵'} ${prefFormatted} Commuter`;
+
+  const menuCloudStatusPill = document.getElementById('menuCloudStatusPill');
+  if (menuCloudStatusPill) {
+    const isCloud = Boolean(window.AppDB && window.AppDB.isCloudActive());
+    if (isCloud) {
+      menuCloudStatusPill.textContent = '☁️ Cloud DB Synced';
+      menuCloudStatusPill.style.background = 'rgba(16, 185, 129, 0.15)';
+      menuCloudStatusPill.style.color = '#10b981';
+    } else {
+      menuCloudStatusPill.textContent = '💾 Local Mode';
+      menuCloudStatusPill.style.background = 'rgba(99, 102, 241, 0.15)';
+      menuCloudStatusPill.style.color = 'var(--primary)';
+    }
+  }
+}
+
 // 13. APP STARTUP
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
+  renderUserProfile();
   loadStoredData();
   applySettings();
   setupEventListeners();

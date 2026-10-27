@@ -6,6 +6,16 @@ A mobile-first, ultra-responsive web application designed for tracking daily tra
 
 ## ✨ Features
 
+- **☁️ Cloud Database (Firebase Cloud Firestore)**:
+  - **Cloud Firestore**: Real-time cloud database syncing expenses and user settings across devices.
+  - **Firebase Authentication**: Cloud-managed user registration, secure login, and password resets.
+  - **Offline-First Resilience**: Automatic local caching so expenses can be logged in offline zones (e.g. metro tunnels) and auto-sync when back online.
+  - **Zero Backend Server Needed**: Runs directly from GitHub, communicating securely with Cloud Firestore.
+- **🔐 Clean Authentication & User Profiles**:
+  - Dedicated **Login & Registration** (`login.html`) with focused email & password authentication.
+  - **Multi-user isolation**: Each user gets their own dedicated cloud database space.
+  - Show/hide password toggle, live password strength meter, and password recovery.
+  - Profile badge & dropdown menu in header with live **Cloud Synced** status and **Sign Out**.
 - **⚡ 1-Tap Quick Commute Presets**:
   - 🛵 **Rapido**: Log bike taxi fares in 2 seconds.
   - 🛺 **Auto**: Track auto rickshaw meters / fixed fares.
@@ -36,19 +46,30 @@ A mobile-first, ultra-responsive web application designed for tracking daily tra
 
 ---
 
-## 🚀 How to Run
+## 🚀 How to Run & Connect
 
-### Method 1: Instant Local Server (Recommended for Mobile Testing)
+### Method 1: GitHub Hosting with Firebase Cloud Database
+Since you host your code on GitHub (e.g. GitHub Pages), you do not need any new hosting or servers:
+1. Follow the quick guide in [`FIREBASE_SETUP.md`](./FIREBASE_SETUP.md) to enable Cloud Firestore and paste your keys into [`firebase-config.js`](./firebase-config.js).
+2. Commit and push to GitHub:
+   ```powershell
+   git add .
+   git commit -m "Connect Firebase Cloud Firestore database"
+   git push
+   ```
+Your GitHub-hosted site is now live with real-time Cloud Firestore database persistence!
+
+### Method 2: Local Server (For testing before pushing)
 From terminal:
 ```powershell
-cd "C:\Users\Prakash\.gemini\antigravity-ide\scratch\expense-tracker"
+cd "c:\Users\Lenovo\.gemini\antigravity\scratch\expense-tracker"
 node server.js
 ```
 Then open:
 - On your PC: `http://localhost:3000`
-- On your Mobile Phone (connected to the same Wi-Fi): `http://<YOUR_LAN_IP>:3000` (e.g. `http://192.168.1.104:3000`)
+- On your Mobile Phone (connected to the same Wi-Fi): `http://<YOUR_LAN_IP>:3000`
 
-### Method 2: Direct File Open (Zero Installation)
+### Method 3: Direct File Open (Zero Installation)
 Simply double click `index.html` in file explorer. It runs directly in any modern web browser without needing any server or build step!
 
 ---

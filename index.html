@@ -17,6 +17,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="styles.css">
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- Cloud Services & DB Layer -->
+  <script src="firebase-config.js"></script>
+  <script src="db.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    if (window.Auth) {
+      window.Auth.requireAuth('login.html');
+    }
+  </script>
 </head>
 <body data-theme="dark">
   <div id="app" class="app-container">
@@ -38,6 +52,36 @@
       </div>
       
       <div class="header-actions">
+        <!-- User Profile Dropdown -->
+        <div class="user-profile-menu-container" id="userProfileMenuContainer">
+          <button id="userProfileBtn" class="user-profile-trigger" title="User Account & Profile" aria-label="User Account">
+            <div class="user-avatar-circle" id="userAvatarCircle">🛵</div>
+            <span class="user-profile-name" id="userProfileName">Alex</span>
+            <span class="user-dropdown-caret">▼</span>
+          </button>
+          
+          <div class="user-dropdown-menu" id="userDropdownMenu">
+            <div class="user-dropdown-header">
+              <div class="user-avatar-circle" id="menuUserAvatarCircle">🛵</div>
+              <div class="user-dropdown-info">
+                <span class="user-dropdown-title" id="menuUserName">Alex Morgan</span>
+                <span class="user-dropdown-sub" id="menuUserEmail">alex@dailyspends.app</span>
+                <span class="user-commute-pill" id="menuUserCommutePill">🛵 Rapido Commuter</span>
+                <span class="user-commute-pill" id="menuCloudStatusPill" style="background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 0.68rem; margin-top: 4px;">☁️ Cloud DB Synced</span>
+              </div>
+            </div>
+            <div class="user-dropdown-actions">
+              <button type="button" class="dropdown-item-btn" id="switchAccountBtn">
+                <span>🔄</span>
+                <span>Switch Account</span>
+              </button>
+              <button type="button" class="dropdown-item-btn danger-item" id="logoutBtn">
+                <span>🚪</span>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
         <button id="themeToggleBtn" class="icon-btn" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
           <span class="theme-icon-dark">🌙</span>
           <span class="theme-icon-light" style="display:none;">☀️</span>
