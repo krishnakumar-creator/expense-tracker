@@ -20,10 +20,12 @@
     appId: "1:507241583588:web:39fedf8bc8bb393b91edf1"
   };
 
-  const isConfigured = firebaseConfig.apiKey &&
-    !firebaseConfig.apiKey.includes('AIzaSyAPbxLEETgEMsZPDhm82SOry_0qNeTmAXM') &&
-    firebaseConfig.projectId &&
-    !firebaseConfig.projectId.includes('expense-tracker-ad7c5');
+  // Project credentials are configured
+  const isConfigured = Boolean(
+    firebaseConfig.apiKey && 
+    firebaseConfig.projectId && 
+    !firebaseConfig.apiKey.includes('YOUR_API_KEY')
+  );
 
   let app = null;
   let auth = null;
