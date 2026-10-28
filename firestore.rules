@@ -1,18 +1,43 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can only read and write their own profile and expense documents
+
+    // Helper functions for data validation
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidExpense(data) {
+      return data.amount is number
+        && data.amount >= 0
+        && data.amount < 100000000
+        && data.category is string
+        && data.category.size() <= 50
+        && data.date is string
+        && data.date.size() <= 20
+        && (!('note' in data) || (data.note is string && data.note.size() <= 500))
+        && (!('paymentMode' in data) || (data.paymentMode is string && data.paymentMode.size() <= 50))
+        && (!('time' in data) || (data.time is string && data.time.size() <= 20))
+        && (!('createdAt' in data) || data.createdAt is number)
+        && (!('updatedAt' in data) || data.updatedAt is number);
+    }
+
+    // Users can only access and modify their own data
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      
+      allow read, write: if isOwner(userId);
+
       match /expenses/{expenseId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidExpense(request.resource.data);
       }
-      
+
       match /{allPaths=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if isOwner(userId);
       }
     }
   }
 }
-

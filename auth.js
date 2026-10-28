@@ -1,6 +1,6 @@
 /**
  * DAILY COMMUTE & EXPENSE TRACKER - AUTHENTICATION MODULE (auth.js)
- * Supports Firebase Cloud Authentication & seamless local offline fallback.
+ * Supports Firebase Cloud Authentication & secure local offline fallback with PBKDF2 hashing.
  */
 
 (function (window) {
@@ -22,6 +22,66 @@
     fuel: '⛽',
     other: '✨'
   };
+
+  /**
+   * Cryptographically hash a password using Web Crypto PBKDF2 with SHA-256 and a random salt
+   */
+  async function _hashPassword(password, saltHex = null) {
+    const enc = new TextEncoder();
+    let salt;
+    if (saltHex) {
+      const matches = saltHex.match(/.{1,2}/g) || [];
+      salt = new Uint8Array(matches.map(byte => parseInt(byte, 16)));
+    } else {
+      salt = window.crypto.getRandomValues(new Uint8Array(16));
+      saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    const keyMaterial = await window.crypto.subtle.importKey(
+      'raw',
+      enc.encode(password),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveBits']
+    );
+
+    const derivedBits = await window.crypto.subtle.deriveBits(
+      {
+        name: 'PBKDF2',
+        salt: salt,
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      256
+    );
+
+    const hashArray = Array.from(new Uint8Array(derivedBits));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return { hash: hashHex, salt: saltHex };
+  }
+
+  /**
+   * Verify password against stored hash or seamlessly migrate legacy accounts
+   */
+  async function _verifyPassword(password, user) {
+    if (!user) return { valid: false, needsUpgrade: false };
+
+    // Upgrade path for legacy accounts that had unhashed plain passwords
+    if (user.password && !user.passwordHash) {
+      if (user.password === password) {
+        return { valid: true, needsUpgrade: true };
+      }
+      return { valid: false, needsUpgrade: false };
+    }
+
+    if (!user.passwordHash || !user.salt) {
+      return { valid: false, needsUpgrade: false };
+    }
+
+    const computed = await _hashPassword(password, user.salt);
+    return { valid: computed.hash === user.passwordHash, needsUpgrade: false };
+  }
 
   const Auth = {
     /**
@@ -154,18 +214,21 @@
         }
       }
 
-      // Local Fallback Registration
+      // Local Fallback Registration with Cryptographic PBKDF2 Hashing
       const users = this.getUsers();
       const existing = users.find(u => u.email.toLowerCase() === normalizedEmail);
       if (existing) {
         return { success: false, error: 'An account with this email already exists. Please Sign In.' };
       }
 
+      const { hash, salt } = await _hashPassword(password);
+
       const newUser = {
         id: 'usr_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
         name: name.trim(),
         email: normalizedEmail,
-        password: password,
+        passwordHash: hash,
+        salt: salt,
         commutePref: commutePref,
         avatar: COMMUTE_ICONS[commutePref] || '🛵',
         tagline: `${(commutePref.charAt(0).toUpperCase() + commutePref.slice(1))} Commuter`,
@@ -175,7 +238,20 @@
       users.push(newUser);
       this._saveUsers(users);
 
-      return { success: true, user: newUser };
+      const session = {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        commutePref: newUser.commutePref,
+        avatar: newUser.avatar,
+        tagline: newUser.tagline,
+        loginTime: Date.now(),
+        isCloud: false,
+        rememberMe: true
+      };
+
+      this._setSession(session, true);
+      return { success: true, user: session };
     },
 
     /**
@@ -238,8 +314,22 @@
         return { success: false, error: 'No account found with this email. Please check or Sign Up.' };
       }
 
-      if (user.password !== password) {
+      const verifyResult = await _verifyPassword(password, user);
+      if (!verifyResult.valid) {
         return { success: false, error: 'Incorrect password. Please try again.' };
+      }
+
+      // Automatically upgrade legacy plain text accounts to PBKDF2 salt + hash
+      if (verifyResult.needsUpgrade) {
+        const { hash, salt } = await _hashPassword(password);
+        const users = this.getUsers();
+        const idx = users.findIndex(u => u.id === user.id);
+        if (idx !== -1) {
+          users[idx].passwordHash = hash;
+          users[idx].salt = salt;
+          delete users[idx].password;
+          this._saveUsers(users);
+        }
       }
 
       const session = {
@@ -362,7 +452,7 @@
         }
       }
 
-      // Local fallback reset
+      // Local fallback reset with cryptographic hashing
       if (!newPassword || newPassword.length < 6) {
         return { success: false, error: 'New password must be at least 6 characters.' };
       }
@@ -374,8 +464,12 @@
         return { success: false, error: 'No account found with this email.' };
       }
 
-      users[userIndex].password = newPassword;
+      const { hash, salt } = await _hashPassword(newPassword);
+      users[userIndex].passwordHash = hash;
+      users[userIndex].salt = salt;
+      delete users[userIndex].password;
       this._saveUsers(users);
+
       return { success: true, message: 'Password updated successfully!' };
     },
 
