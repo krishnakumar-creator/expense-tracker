@@ -158,7 +158,7 @@ async function loadStoredData() {
     const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
     let rawData = localStorage.getItem(getStorageKey());
     if (rawData) {
-      state.expenses = JSON.parse(rawData);
+      state.expenses = deduplicateExpenses(JSON.parse(rawData));
     } else {
       state.expenses = [];
       saveExpensesToStorage();
@@ -174,7 +174,7 @@ async function loadStoredData() {
       try {
         const cloudExpenses = await window.AppDB.loadExpenses(user.id);
         if (cloudExpenses && cloudExpenses.length > 0) {
-          state.expenses = cloudExpenses;
+          state.expenses = deduplicateExpenses(cloudExpenses);
           refreshAllViews();
         } else if (state.expenses && state.expenses.length > 0) {
           window.AppDB.batchSaveExpenses(user.id, state.expenses);
@@ -189,7 +189,7 @@ async function loadStoredData() {
 
         window.AppDB.subscribeExpenses(user.id, (updated) => {
           if (Array.isArray(updated) && updated.length > 0) {
-            state.expenses = updated;
+            state.expenses = deduplicateExpenses(updated);
             refreshAllViews();
           }
         });
@@ -203,8 +203,36 @@ async function loadStoredData() {
   }
 }
 
+
+function deduplicateExpenses(expenses) {
+  if (!Array.isArray(expenses)) return [];
+  const seenIds = new Set();
+  const clean = [];
+  for (const exp of expenses) {
+    if (!exp || !exp.id) continue;
+    if (seenIds.has(exp.id)) continue;
+
+    // Check if another identical expense was submitted within 3 seconds
+    const isDuplicate = clean.some(existing =>
+      Number(existing.amount) === Number(exp.amount) &&
+      existing.category === exp.category &&
+      existing.date === exp.date &&
+      (existing.note || '') === (exp.note || '') &&
+      (existing.paymentMode || '') === (exp.paymentMode || '') &&
+      Math.abs((existing.createdAt || 0) - (exp.createdAt || 0)) < 3000
+    );
+
+    if (!isDuplicate) {
+      seenIds.add(exp.id);
+      clean.push(exp);
+    }
+  }
+  return clean;
+}
+
 function saveExpensesToStorage() {
   try {
+    state.expenses = deduplicateExpenses(state.expenses);
     localStorage.setItem(getStorageKey(), JSON.stringify(state.expenses));
     const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
     if (window.AppDB && window.AppDB.isCloudActive() && user) {
@@ -808,7 +836,13 @@ function updateDateChipSelection(type) {
   if (type === 'yesterday') yestBtn.classList.add('active');
 }
 
-function saveExpenseFromForm() {
+let isSavingExpense = false;
+
+function saveExpenseFromForm(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (isSavingExpense) return;
+  isSavingExpense = true;
+  setTimeout(() => { isSavingExpense = false; }, 600);
   const amtVal = parseFloat(document.getElementById('formAmount').value);
   if (!amtVal || amtVal <= 0) {
     showToast('⚠️ Please enter a valid expense amount');
@@ -1044,13 +1078,14 @@ function setupEventListeners() {
       selectPaymentMode(chip.getAttribute('data-mode'));
     });
   });
-
-  // Save Expense Button / Form Submit
-  document.getElementById('saveExpenseBtn').addEventListener('click', saveExpenseFromForm);
-  document.getElementById('expenseForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    saveExpenseFromForm();
-  });
+  // Save Expense Form Submit (Single submit listener on form prevents duplicate submissions)
+  const expenseForm = document.getElementById('expenseForm');
+  if (expenseForm) {
+    expenseForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      saveExpenseFromForm(e);
+    });
+  }
 
   // Tab View Switcher
   document.querySelectorAll('.tab-btn').forEach(btn => {
