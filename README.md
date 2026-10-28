@@ -10,6 +10,7 @@ A mobile-first, ultra-responsive web application designed for tracking daily tra
   - **Cloud Firestore**: Real-time cloud database syncing expenses and user settings across devices.
   - **Firebase Authentication**: Cloud-managed user registration, secure login, and password resets.
   - **Offline-First Resilience**: Automatic local caching so expenses can be logged in offline zones (e.g. metro tunnels) and auto-sync when back online.
+  - **Zero Preloaded Numbers**: New accounts start with clean zero balances and an empty dashboard.
   - **Zero Backend Server Needed**: Runs directly from GitHub, communicating securely with Cloud Firestore.
 - **🔐 Clean Authentication & User Profiles**:
   - Dedicated **Login & Registration** (`login.html`) with focused email & password authentication.
@@ -38,11 +39,9 @@ A mobile-first, ultra-responsive web application designed for tracking daily tra
   - Quick amount tap chips (`+10`, `+20`, `+50`, `+100`, `+150`, `+200`).
   - Dark & Light mode toggle.
   - Installable to home screen on Android and iOS (PWA manifest & icons included).
-- **💾 Offline & Data Management**:
-  - Automatically saves all data locally in the browser (`localStorage`).
-  - **Export CSV** (opens cleanly in Excel / Google Sheets).
-  - **Backup & Restore JSON** to transfer or backup data between devices.
-  - Preloaded with realistic commute data to test immediately.
+- **💾 Real-Time Cloud Persistence**:
+  - Automatically saves all data to Cloud Firestore in real time.
+  - Offline-first cache ensures seamless logging even without network connectivity.
 
 ---
 

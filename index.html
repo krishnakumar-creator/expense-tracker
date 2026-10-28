@@ -86,13 +86,6 @@
           <span class="theme-icon-dark">🌙</span>
           <span class="theme-icon-light" style="display:none;">☀️</span>
         </button>
-        <button id="backupModalBtn" class="icon-btn" title="Backup & Export Data" aria-label="Backup and Data">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-        </button>
       </div>
     </header>
 
@@ -256,7 +249,7 @@
       </button>
       <button class="tab-btn" data-tab="tab-settings" role="tab" id="tabSettingsBtn">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-        <span>Budget & Backup</span>
+        <span>Budget & Settings</span>
       </button>
     </nav>
 
@@ -369,7 +362,7 @@
           <div class="budget-input-row">
             <div class="amount-field-wrap">
               <span class="currency-prefix">₹</span>
-              <input type="number" id="budgetInput" min="500" step="500" value="12000">
+              <input type="number" id="budgetInput" min="500" step="500" value="0" placeholder="e.g. 10000">
             </div>
             <button id="saveBudgetBtn" class="btn btn-primary">Save Budget</button>
           </div>
@@ -385,39 +378,6 @@
             <button class="curr-btn" data-currency="€">€ (EUR)</button>
             <button class="curr-btn" data-currency="£">£ (GBP)</button>
             <button class="curr-btn" data-currency="AED">AED</button>
-          </div>
-        </div>
-
-        <!-- Data Export & Import -->
-        <div class="settings-card">
-          <h3>Data Management & Backup</h3>
-          <p class="settings-desc">Export your records for Excel or backup/restore on other devices</p>
-          
-          <div class="data-actions-grid">
-            <button id="exportCsvBtn" class="btn btn-outline">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              Export CSV (Excel)
-            </button>
-            <button id="exportJsonBtn" class="btn btn-outline">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-              Backup JSON
-            </button>
-            <label class="btn btn-outline file-label">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              Restore JSON
-              <input type="file" id="importJsonInput" accept=".json" style="display:none;">
-            </label>
-            <button id="loadSampleDataBtn" class="btn btn-outline">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-              Load Demo Commute Data
-            </button>
-          </div>
-
-          <div style="margin-top: 18px; border-top: 1px solid var(--border-color); padding-top: 14px;">
-            <button id="clearAllDataBtn" class="btn btn-danger-outline">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              Clear All Records
-            </button>
           </div>
         </div>
       </div>

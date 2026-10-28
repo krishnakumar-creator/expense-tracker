@@ -125,7 +125,7 @@ let state = {
   expenses: [],
   settings: {
     currency: '₹',
-    budget: 12000,
+    budget: 0,
     theme: 'dark'
   },
   currentYear: 2026,
@@ -147,151 +147,7 @@ state.currentMonth = today.getMonth();
 // 3. SAMPLE DEMO COMMUTE DATA GENERATOR
 // ==========================================
 function generateDemoData() {
-  const y = state.currentYear;
-  const m = String(state.currentMonth + 1).padStart(2, '0');
-  
-  return [
-    {
-      id: 'demo-1',
-      amount: 68,
-      category: 'rapido',
-      note: 'Home to Metro Station',
-      date: `${y}-${m}-26`,
-      time: '08:45',
-      paymentMode: 'UPI',
-      createdAt: Date.now() - 3600000 * 5
-    },
-    {
-      id: 'demo-2',
-      amount: 32,
-      category: 'train',
-      note: 'Metro card to MG Road office',
-      date: `${y}-${m}-26`,
-      time: '09:15',
-      paymentMode: 'Metro Card',
-      createdAt: Date.now() - 3600000 * 4
-    },
-    {
-      id: 'demo-3',
-      amount: 25,
-      category: 'tea',
-      note: 'Morning cutting chai & biscuit',
-      date: `${y}-${m}-26`,
-      time: '11:10',
-      paymentMode: 'UPI',
-      createdAt: Date.now() - 3600000 * 2
-    },
-    {
-      id: 'demo-4',
-      amount: 110,
-      category: 'food',
-      note: 'South Indian Thali Lunch',
-      date: `${y}-${m}-26`,
-      time: '13:30',
-      paymentMode: 'UPI',
-      createdAt: Date.now() - 3600000 * 1
-    },
-    {
-      id: 'demo-5',
-      amount: 85,
-      category: 'auto',
-      note: 'Auto from Client meeting to Office',
-      date: `${y}-${m}-25`,
-      time: '15:20',
-      paymentMode: 'Cash',
-      createdAt: Date.now() - 86400000
-    },
-    {
-      id: 'demo-6',
-      amount: 20,
-      category: 'tea',
-      note: 'Evening Ginger Tea with Ramesh',
-      date: `${y}-${m}-25`,
-      time: '17:40',
-      paymentMode: 'UPI',
-      createdAt: Date.now() - 86400000 + 3600000
-    },
-    {
-      id: 'demo-7',
-      amount: 74,
-      category: 'rapido',
-      note: 'Rapido ride return home',
-      date: `${y}-${m}-25`,
-      time: '19:15',
-      paymentMode: 'UPI',
-      createdAt: Date.now() - 86400000 + 7200000
-    },
-    {
-      id: 'demo-8',
-      amount: 25,
-      category: 'bus',
-      note: 'City Bus route 335E',
-      date: `${y}-${m}-24`,
-      time: '08:30',
-      paymentMode: 'Cash',
-      createdAt: Date.now() - 86400000 * 2
-    },
-    {
-      id: 'demo-9',
-      amount: 140,
-      category: 'food',
-      note: 'Meals with team',
-      date: `${y}-${m}-24`,
-      time: '13:00',
-      paymentMode: 'UPI',
-      createdAt: Date.now() - 86400000 * 2 + 10000
-    },
-    {
-      id: 'demo-10',
-      amount: 120,
-      category: 'auto',
-      note: 'Auto ride back in rain',
-      date: `${y}-${m}-23`,
-      time: '19:50',
-      paymentMode: 'Cash',
-      createdAt: Date.now() - 86400000 * 3
-    },
-    {
-      id: 'demo-11',
-      amount: 30,
-      category: 'tea',
-      note: 'Tea and hot samosa',
-      date: `${y}-${m}-23`,
-      time: '17:15',
-      paymentMode: 'UPI',
-      createdAt: Date.now() - 86400000 * 3 - 3600000
-    },
-    {
-      id: 'demo-12',
-      amount: 58,
-      category: 'rapido',
-      note: 'Quick morning commute to station',
-      date: `${y}-${m}-22`,
-      time: '09:00',
-      paymentMode: 'UPI',
-      createdAt: Date.now() - 86400000 * 4
-    },
-    {
-      id: 'demo-13',
-      amount: 32,
-      category: 'train',
-      note: 'Metro card fare',
-      date: `${y}-${m}-22`,
-      time: '09:25',
-      paymentMode: 'Metro Card',
-      createdAt: Date.now() - 86400000 * 4 + 1800000
-    },
-    {
-      id: 'demo-14',
-      amount: 200,
-      category: 'fuel',
-      note: 'Bike Petrol 2 Litres',
-      date: `${y}-${m}-20`,
-      time: '18:00',
-      paymentMode: 'UPI',
-      createdAt: Date.now() - 86400000 * 6
-    }
-  ];
+  return [];
 }
 
 // ==========================================
@@ -301,17 +157,10 @@ async function loadStoredData() {
   try {
     const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
     let rawData = localStorage.getItem(getStorageKey());
-    if (!rawData) {
-      const legacyData = localStorage.getItem('dailyspends_data_v1');
-      if (legacyData && (!user || user.id === 'usr_alex' || user.id === 'usr_guest')) {
-        rawData = legacyData;
-      }
-    }
     if (rawData) {
       state.expenses = JSON.parse(rawData);
     } else {
-      // First time user: pre-populate with rich demo commute data!
-      state.expenses = generateDemoData();
+      state.expenses = [];
       saveExpensesToStorage();
     }
 
@@ -565,33 +414,40 @@ function updateMonthDisplay() {
 
 function renderOverviewCards() {
   const stats = calculateMonthStats();
-  const budget = state.settings.budget || 12000;
+  const budget = Number(state.settings.budget) || 0;
 
   // Total Card
   document.getElementById('monthlyTotalDisplay').textContent = formatCurrency(stats.totalSpent);
   document.getElementById('totalTxCount').textContent = `${stats.txCount} ${stats.txCount === 1 ? 'expense' : 'expenses'}`;
-  document.getElementById('budgetTotalDisplay').textContent = formatCurrency(budget);
 
-  const remaining = budget - stats.totalSpent;
   const remEl = document.getElementById('budgetRemainingDisplay');
   const progBar = document.getElementById('budgetProgressBar');
-  const percentSpent = Math.min(Math.round((stats.totalSpent / budget) * 100), 100);
 
-  progBar.style.width = `${percentSpent}%`;
+  if (budget > 0) {
+    document.getElementById('budgetTotalDisplay').textContent = formatCurrency(budget);
+    const remaining = budget - stats.totalSpent;
+    const percentSpent = Math.min(Math.round((stats.totalSpent / budget) * 100), 100);
+    progBar.style.width = `${percentSpent}%`;
 
-  if (remaining >= 0) {
-    remEl.textContent = `${formatCurrency(remaining)} left`;
-    if (percentSpent > 80) {
-      remEl.className = 'budget-rem-warning';
-      progBar.className = 'progress-bar-fill warning';
+    if (remaining >= 0) {
+      remEl.textContent = `${formatCurrency(remaining)} left`;
+      if (percentSpent > 80) {
+        remEl.className = 'budget-rem-warning';
+        progBar.className = 'progress-bar-fill warning';
+      } else {
+        remEl.className = 'budget-rem-positive';
+        progBar.className = 'progress-bar-fill';
+      }
     } else {
-      remEl.className = 'budget-rem-positive';
-      progBar.className = 'progress-bar-fill';
+      remEl.textContent = `${formatCurrency(Math.abs(remaining))} exceeded`;
+      remEl.className = 'budget-rem-exceeded';
+      progBar.className = 'progress-bar-fill exceeded';
     }
   } else {
-    remEl.textContent = `${formatCurrency(Math.abs(remaining))} exceeded`;
-    remEl.className = 'budget-rem-exceeded';
-    progBar.className = 'progress-bar-fill exceeded';
+    document.getElementById('budgetTotalDisplay').textContent = 'Not set';
+    remEl.textContent = 'Set in Settings';
+    remEl.className = 'budget-rem-neutral';
+    progBar.style.width = '0%';
   }
 
   // Commute Card
@@ -1047,99 +903,7 @@ function switchTab(tabId) {
 // ==========================================
 // 10. BACKUP, EXPORT & IMPORT
 // ==========================================
-function exportToCsv() {
-  const items = getExpensesForCurrentMonth();
-  if (items.length === 0) {
-    showToast('⚠️ No records to export for this month');
-    return;
-  }
-
-  const headers = ['Date', 'Time', 'Category', 'Amount', 'Payment Mode', 'Notes/Route'];
-  const rows = items.map(item => {
-    const cat = CATEGORIES[item.category] || CATEGORIES.other;
-    return [
-      item.date,
-      item.time || '',
-      `"${cat.name}"`,
-      item.amount,
-      `"${item.paymentMode || ''}"`,
-      `"${(item.note || '').replace(/"/g, '""')}"`
-    ];
-  });
-
-  const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `DailySpends_${MONTH_NAMES[state.currentMonth]}_${state.currentYear}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  showToast('📥 CSV file exported!');
-}
-
-function exportToJson() {
-  const exportData = {
-    version: '1.0',
-    exportDate: new Date().toISOString(),
-    settings: state.settings,
-    expenses: state.expenses
-  };
-
-  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportData, null, 2));
-  const link = document.createElement('a');
-  link.setAttribute('href', dataStr);
-  link.setAttribute('download', `DailySpends_Backup_${getFormattedDate()}.json`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  showToast('📥 Full JSON Backup saved!');
-}
-
-function importFromJson(file) {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (Array.isArray(data.expenses)) {
-        state.expenses = data.expenses;
-        if (data.settings) {
-          state.settings = { ...state.settings, ...data.settings };
-          applySettings();
-        }
-        saveExpensesToStorage();
-        saveSettingsToStorage();
-        refreshAllViews();
-        showToast(`✅ Successfully imported ${data.expenses.length} records!`);
-      } else {
-        showToast('❌ Invalid backup JSON file format');
-      }
-    } catch (err) {
-      console.error(err);
-      showToast('❌ Failed to parse JSON file');
-    }
-  };
-  reader.readAsText(file);
-}
-
-function clearAllData() {
-  if (confirm('Are you sure you want to delete ALL expense records? This cannot be undone.')) {
-    state.expenses = [];
-    saveExpensesToStorage();
-    refreshAllViews();
-    showToast('🗑️ All expense data wiped');
-  }
-}
-
-function resetToSampleData() {
-  if (confirm('Load demo commute & food expenses for this month?')) {
-    state.expenses = generateDemoData();
-    saveExpensesToStorage();
-    refreshAllViews();
-    showToast('⚡ Demo commute data loaded!');
-  }
-}
+// Data download, export and demo loading removed as requested
 
 // ==========================================
 // 11. TOAST & HELPERS
@@ -1191,11 +955,6 @@ function setupEventListeners() {
     state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark';
     saveSettingsToStorage();
     applySettings();
-  });
-
-  // Backup & export header button jumps to Settings tab
-  document.getElementById('backupModalBtn').addEventListener('click', () => {
-    switchTab('tab-settings');
   });
 
   // Month navigation
@@ -1347,17 +1106,6 @@ function setupEventListeners() {
       showToast(`💱 Currency set to ${state.settings.currency}`);
     });
   });
-
-  // Export / Import
-  document.getElementById('exportCsvBtn').addEventListener('click', exportToCsv);
-  document.getElementById('exportJsonBtn').addEventListener('click', exportToJson);
-  document.getElementById('importJsonInput').addEventListener('change', (e) => {
-    if (e.target.files && e.target.files[0]) {
-      importFromJson(e.target.files[0]);
-    }
-  });
-  document.getElementById('loadSampleDataBtn').addEventListener('click', resetToSampleData);
-  document.getElementById('clearAllDataBtn').addEventListener('click', clearAllData);
 
   // User Profile Dropdown & Session Events
   setupUserProfileEvents();

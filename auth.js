@@ -11,28 +11,7 @@
   const AUTH_REDIRECT_KEY = 'dailyspends_post_login_redirect';
 
   // Seed default demo accounts for local fallback
-  const DEFAULT_USERS = [
-    {
-      id: 'usr_alex',
-      name: 'Alex Morgan',
-      email: 'alex@dailyspends.app',
-      password: 'password123',
-      commutePref: 'rapido',
-      avatar: '🛵',
-      tagline: 'Rapido & Metro Commuter',
-      createdAt: 1729000000000
-    },
-    {
-      id: 'usr_priya',
-      name: 'Priya Sharma',
-      email: 'priya@commute.in',
-      password: 'password123',
-      commutePref: 'train',
-      avatar: '🚆',
-      tagline: 'Metro & Train Commuter',
-      createdAt: 1729100000000
-    }
-  ];
+  const DEFAULT_USERS = [];
 
   // Map commute preferences to icons
   const COMMUTE_ICONS = {

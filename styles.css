@@ -431,6 +431,7 @@ body {
   font-weight: 700;
 }
 
+.budget-rem-neutral { color: var(--text-muted); font-weight: 600; font-size: 0.82rem; }
 .budget-rem-exceeded {
   color: var(--danger);
   font-weight: 700;
