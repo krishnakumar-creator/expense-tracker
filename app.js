@@ -10,7 +10,7 @@ const CATEGORIES = {
   rapido: {
     id: 'rapido',
     name: 'Rapido',
-    icon: 'ðŸ›µ',
+    icon: '🛵',
     group: 'travel',
     color: '#f59e0b',
     badgeClass: 'badge-rapido',
@@ -20,7 +20,7 @@ const CATEGORIES = {
   auto: {
     id: 'auto',
     name: 'Auto Rickshaw',
-    icon: 'ðŸ›º',
+    icon: '🛺',
     group: 'travel',
     color: '#10b981',
     badgeClass: 'badge-auto',
@@ -30,7 +30,7 @@ const CATEGORIES = {
   bus: {
     id: 'bus',
     name: 'Bus',
-    icon: 'ðŸšŒ',
+    icon: '🚌',
     group: 'travel',
     color: '#38bdf8',
     badgeClass: 'badge-bus',
@@ -40,7 +40,7 @@ const CATEGORIES = {
   train: {
     id: 'train',
     name: 'Train / Metro',
-    icon: 'ðŸš†',
+    icon: '🚆',
     group: 'travel',
     color: '#a855f7',
     badgeClass: 'badge-train',
@@ -50,7 +50,7 @@ const CATEGORIES = {
   tea: {
     id: 'tea',
     name: 'Tea & Snacks',
-    icon: 'â˜•',
+    icon: '☕',
     group: 'food',
     color: '#fb923c',
     badgeClass: 'badge-tea',
@@ -60,7 +60,7 @@ const CATEGORIES = {
   food: {
     id: 'food',
     name: 'Lunch & Food',
-    icon: 'ðŸ±',
+    icon: '🍱',
     group: 'food',
     color: '#f43f5e',
     badgeClass: 'badge-food',
@@ -70,7 +70,7 @@ const CATEGORIES = {
   fuel: {
     id: 'fuel',
     name: 'Fuel / Petrol',
-    icon: 'â›½',
+    icon: '⛽',
     group: 'travel',
     color: '#ef4444',
     badgeClass: 'badge-fuel',
@@ -80,7 +80,7 @@ const CATEGORIES = {
   groceries: {
     id: 'groceries',
     name: 'Groceries',
-    icon: 'ðŸ›’',
+    icon: '🛒',
     group: 'other',
     color: '#10b981',
     badgeClass: 'badge-groceries',
@@ -90,7 +90,7 @@ const CATEGORIES = {
   bills: {
     id: 'bills',
     name: 'Recharge & Bills',
-    icon: 'ðŸ“±',
+    icon: '📱',
     group: 'other',
     color: '#3b82f6',
     badgeClass: 'badge-bills',
@@ -100,7 +100,7 @@ const CATEGORIES = {
   other: {
     id: 'other',
     name: 'Other Expense',
-    icon: 'âœ¨',
+    icon: '✨',
     group: 'other',
     color: '#64748b',
     badgeClass: 'badge-other',
@@ -124,7 +124,7 @@ function getSettingsKey() {
 let state = {
   expenses: [],
   settings: {
-    currency: 'â‚¹',
+    currency: '₹',
     budget: 0,
     theme: 'dark'
   },
@@ -295,9 +295,9 @@ function formatGroupDateHeader(dateStr) {
   const monthShort = MONTH_NAMES[m - 1].substring(0, 3);
 
   if (diffDays === 0) {
-    return `Today â€¢ ${d} ${monthShort}`;
+    return `Today • ${d} ${monthShort}`;
   } else if (diffDays === 1) {
-    return `Yesterday â€¢ ${d} ${monthShort}`;
+    return `Yesterday • ${d} ${monthShort}`;
   } else {
     const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][targetDate.getDay()];
     return `${dayName}, ${d} ${monthShort} ${y}`;
@@ -501,7 +501,7 @@ function renderExpensesList() {
     const isFiltered = state.categoryFilter !== 'all' || state.searchQuery.trim() !== '';
     container.innerHTML = `
       <div class="empty-state-card">
-        <div class="empty-state-icon">${isFiltered ? 'ðŸ”' : 'ðŸ›µ'}</div>
+        <div class="empty-state-icon">${isFiltered ? '🔍' : '🛵'}</div>
         <div class="empty-state-title">${isFiltered ? 'No matching expenses' : 'No expenses for this month'}</div>
         <p class="empty-state-desc">
           ${isFiltered 
@@ -586,10 +586,10 @@ function renderAnalytics() {
   
   const commuteBarsContainer = document.getElementById('travelModeBars');
   const modes = [
-    { key: 'rapido', label: 'Rapido (Bike Taxi)', icon: 'ðŸ›µ', color: 'var(--cat-rapido)' },
-    { key: 'auto', label: 'Auto Rickshaw', icon: 'ðŸ›º', color: 'var(--cat-auto)' },
-    { key: 'bus', label: 'Bus Commute', icon: 'ðŸšŒ', color: 'var(--cat-bus)' },
-    { key: 'train', label: 'Train / Metro', icon: 'ðŸš†', color: 'var(--cat-train)' }
+    { key: 'rapido', label: 'Rapido (Bike Taxi)', icon: '🛵', color: 'var(--cat-rapido)' },
+    { key: 'auto', label: 'Auto Rickshaw', icon: '🛺', color: 'var(--cat-auto)' },
+    { key: 'bus', label: 'Bus Commute', icon: '🚌', color: 'var(--cat-bus)' },
+    { key: 'train', label: 'Train / Metro', icon: '🚆', color: 'var(--cat-train)' }
   ];
 
   let barsHtml = '';
@@ -848,14 +848,14 @@ function saveExpenseFromForm(e) {
   setTimeout(() => { isSavingExpense = false; }, 600);
   const amtVal = parseFloat(document.getElementById('formAmount').value);
   if (!amtVal || amtVal <= 0) {
-    showToast('âš ï¸ Please enter a valid expense amount');
+    showToast('⚠️ Please enter a valid expense amount');
     document.getElementById('formAmount').focus();
     return;
   }
 
   const dateVal = document.getElementById('formDate').value;
   if (!dateVal) {
-    showToast('âš ï¸ Please select a date');
+    showToast('⚠️ Please select a date');
     return;
   }
 
@@ -875,7 +875,7 @@ function saveExpenseFromForm(e) {
         date: dateVal,
         paymentMode: paymentVal
       };
-      showToast('âœ… Expense updated successfully');
+      showToast('✅ Expense updated successfully');
     }
   } else {
     // Create new
@@ -892,7 +892,7 @@ function saveExpenseFromForm(e) {
     state.expenses.unshift(newExpense);
     
     const cat = CATEGORIES[categoryVal] || CATEGORIES.other;
-    showToast(`âœ… Added ${formatCurrency(amtVal)} for ${cat.name}`);
+    showToast(`✅ Added ${formatCurrency(amtVal)} for ${cat.name}`);
   }
 
   saveExpensesToStorage();
@@ -909,7 +909,7 @@ function deleteExpense(id) {
       window.AppDB.deleteExpense(user.id, id);
     }
     refreshAllViews();
-    showToast('ðŸ—‘ï¸ Expense deleted');
+    showToast('🗑️ Expense deleted');
   }
 }
 
@@ -1148,7 +1148,7 @@ function setupEventListeners() {
       state.settings.budget = val;
       saveSettingsToStorage();
       renderOverviewCards();
-      showToast('ðŸŽ¯ Budget updated!');
+      showToast('🎯 Budget updated!');
     }
   });
 
@@ -1159,7 +1159,7 @@ function setupEventListeners() {
       saveSettingsToStorage();
       applySettings();
       refreshAllViews();
-      showToast(`ðŸ’± Currency set to ${state.settings.currency}`);
+      showToast(`💱 Currency set to ${state.settings.currency}`);
     });
   });
 
@@ -1219,7 +1219,7 @@ function renderUserProfile() {
   const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : {
     name: 'Alex Morgan',
     email: 'alex@dailyspends.app',
-    avatar: 'ðŸ›µ',
+    avatar: '🛵',
     commutePref: 'rapido'
   };
 
@@ -1234,22 +1234,22 @@ function renderUserProfile() {
   const pref = user.commutePref || 'commute';
   const prefFormatted = pref.charAt(0).toUpperCase() + pref.slice(1);
 
-  if (userAvatarCircle) userAvatarCircle.textContent = user.avatar || 'ðŸ›µ';
+  if (userAvatarCircle) userAvatarCircle.textContent = user.avatar || '🛵';
   if (userProfileName) userProfileName.textContent = firstName;
-  if (menuUserAvatarCircle) menuUserAvatarCircle.textContent = user.avatar || 'ðŸ›µ';
+  if (menuUserAvatarCircle) menuUserAvatarCircle.textContent = user.avatar || '🛵';
   if (menuUserName) menuUserName.textContent = user.name || 'User';
   if (menuUserEmail) menuUserEmail.textContent = user.email || '';
-  if (menuUserCommutePill) menuUserCommutePill.textContent = `${user.avatar || 'ðŸ›µ'} ${prefFormatted} Commuter`;
+  if (menuUserCommutePill) menuUserCommutePill.textContent = `${user.avatar || '🛵'} ${prefFormatted} Commuter`;
 
   const menuCloudStatusPill = document.getElementById('menuCloudStatusPill');
   if (menuCloudStatusPill) {
     const isCloud = Boolean(window.AppDB && window.AppDB.isCloudActive());
     if (isCloud) {
-      menuCloudStatusPill.textContent = 'â˜ï¸ Cloud DB Synced';
+      menuCloudStatusPill.textContent = '☁️ Cloud DB Synced';
       menuCloudStatusPill.style.background = 'rgba(16, 185, 129, 0.15)';
       menuCloudStatusPill.style.color = '#10b981';
     } else {
-      menuCloudStatusPill.textContent = 'ðŸ’¾ Local Mode';
+      menuCloudStatusPill.textContent = '💾 Local Mode';
       menuCloudStatusPill.style.background = 'rgba(99, 102, 241, 0.15)';
       menuCloudStatusPill.style.color = 'var(--primary)';
     }
