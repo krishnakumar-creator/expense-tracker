@@ -10,22 +10,22 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="icon-192.svg">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com wss://*.firebaseio.com; frame-src https://*.firebaseapp.com;">
 
   <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body data-theme="dark" class="auth-page">
 
   <!-- Top Navigation (Theme Toggle) -->
   <div class="auth-nav-top">
     <button id="themeToggleBtn" class="icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
-      <span class="theme-icon-dark">🌙</span>
-      <span class="theme-icon-light" style="display:none;">☀️</span>
+      <span class="theme-icon-dark"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+      <span class="theme-icon-light" style="display:none;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
     </button>
   </div>
 
@@ -44,6 +44,12 @@
         <h1 class="auth-title">DailySpends</h1>
         <p class="auth-subtitle" id="authSubtitle">Sign in to track your rides, metro, food & daily expenses</p>
       </header>
+
+      <!-- Segmented Auth Tabs -->
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" id="tabSignInBtn">Sign In</button>
+        <button type="button" class="auth-tab-btn" id="tabSignUpBtn">Create Account</button>
+      </div>
 
       <!-- ================= SIGN IN FORM ================= -->
       <form id="signInForm" class="auth-form" onsubmit="return false;">
@@ -118,12 +124,128 @@
         </button>
       </form>
 
+      <!-- ================= SIGN UP FORM ================= -->
+      <form id="signUpForm" class="auth-form" style="display: none;" onsubmit="return false;">
+        <!-- Full Name Field -->
+        <div class="auth-field">
+          <label class="auth-label" for="signUpName">Full Name</label>
+          <div class="auth-input-wrap">
+            <span class="input-icon-left">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+            <input 
+              type="text" 
+              id="signUpName" 
+              class="auth-input" 
+              placeholder="e.g. Alex Morgan" 
+              required 
+              autocomplete="name"
+            >
+          </div>
+        </div>
+
+        <!-- Email Field -->
+        <div class="auth-field">
+          <label class="auth-label" for="signUpEmail">Email Address</label>
+          <div class="auth-input-wrap">
+            <span class="input-icon-left">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </span>
+            <input 
+              type="email" 
+              id="signUpEmail" 
+              class="auth-input" 
+              placeholder="name@example.com" 
+              required 
+              autocomplete="email"
+            >
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="auth-field">
+          <label class="auth-label" for="signUpPassword">Password (6+ characters)</label>
+          <div class="auth-input-wrap">
+            <span class="input-icon-left">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+            <input 
+              type="password" 
+              id="signUpPassword" 
+              class="auth-input has-right-btn" 
+              placeholder="••••••••" 
+              required 
+              minlength="6"
+              autocomplete="new-password"
+            >
+            <button type="button" class="toggle-password-btn" data-target="signUpPassword" title="Show/Hide Password" aria-label="Toggle password visibility">
+              <svg class="eye-open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-closed" style="display:none;" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Commute Mode Preference -->
+        <div class="auth-field">
+          <label class="auth-label">Primary Daily Commute</label>
+          <div class="commute-pref-grid" id="commutePrefGrid">
+            <div class="commute-pref-option selected" data-pref="rapido">
+              <span class="commute-pref-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.8"/><circle cx="18.5" cy="17.5" r="2.8"/><path d="M15 6h3.5"/><path d="M16 6l-2.5 7H7.5"/><path d="M10 13l-4.5 4.5"/><path d="M12 10h4"/></svg>
+              </span>
+              <span class="commute-pref-name">Rapido</span>
+            </div>
+            <div class="commute-pref-option" data-pref="auto">
+              <span class="commute-pref-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M3.5 14h2l2.5-8h7l3 6h2.5v3.5h-2"/><path d="M8.5 18h7"/><path d="M8 6.5v6.5h6.5V6.5"/><line x1="16" y1="10" x2="18" y2="10"/></svg>
+              </span>
+              <span class="commute-pref-name">Auto</span>
+            </div>
+            <div class="commute-pref-option" data-pref="bus">
+              <span class="commute-pref-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="15" rx="3"/><line x1="4" y1="10" x2="20" y2="10"/><circle cx="8" cy="14.5" r="1.2" fill="currentColor"/><circle cx="16" cy="14.5" r="1.2" fill="currentColor"/><path d="M6 18v2.5M18 18v2.5"/><line x1="10" y1="6" x2="14" y2="6"/></svg>
+              </span>
+              <span class="commute-pref-name">Bus</span>
+            </div>
+            <div class="commute-pref-option" data-pref="train">
+              <span class="commute-pref-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 10h16"/><circle cx="8" cy="14" r="1" fill="currentColor"/><circle cx="16" cy="14" r="1" fill="currentColor"/><path d="m8 17-3 3M16 17l3 3"/><line x1="9" y1="6" x2="15" y2="6"/></svg>
+              </span>
+              <span class="commute-pref-name">Train</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Sign Up Button -->
+        <button type="submit" id="submitSignUpBtn" class="btn-auth-primary">
+          <span>Create Account</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </form>
+
     </div>
   </div>
 
   <!-- Toast Notification -->
   <div id="toastNotification" class="toast-popup" style="display: none;">
-    <span id="toastIcon">✨</span>
+    <span id="toastIcon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg></span>
     <span id="toastMessage">Welcome back!</span>
   </div>
 
@@ -134,8 +256,9 @@
 
   <!-- App Services -->
   <script src="firebase-config.js"></script>
-  <script src="db.js"></script>
-  <script src="auth.js"></script>
+  <script src="icons.js?v=2"></script>
+  <script src="db.js?v=2"></script>
+  <script src="auth.js?v=2"></script>
 
   <script>
     (function() {
@@ -144,7 +267,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('logout') === 'true') {
           window.Auth.logout(null);
-          showToast('👋 You have been safely logged out.', '👋');
+          showToast('You have been safely logged out.', 'logout');
         } else {
           window.Auth.redirectIfAuthenticated('index.html');
           return;
@@ -191,7 +314,42 @@
         }
       }
 
-      // 3. Password Visibility Toggles
+      // 3. Tab Switching (Sign In vs Create Account)
+      const tabSignInBtn = document.getElementById('tabSignInBtn');
+      const tabSignUpBtn = document.getElementById('tabSignUpBtn');
+      const authSubtitle = document.getElementById('authSubtitle');
+      const signUpForm = document.getElementById('signUpForm');
+
+      if (tabSignInBtn && tabSignUpBtn) {
+        tabSignInBtn.addEventListener('click', () => {
+          tabSignInBtn.classList.add('active');
+          tabSignUpBtn.classList.remove('active');
+          signInForm.style.display = 'flex';
+          signUpForm.style.display = 'none';
+          if (authSubtitle) authSubtitle.textContent = 'Sign in to track your rides, metro, food & daily expenses';
+        });
+
+        tabSignUpBtn.addEventListener('click', () => {
+          tabSignUpBtn.classList.add('active');
+          tabSignInBtn.classList.remove('active');
+          signInForm.style.display = 'none';
+          signUpForm.style.display = 'flex';
+          if (authSubtitle) authSubtitle.textContent = 'Create your account to start logging daily expenses';
+        });
+      }
+
+      // Commute Preference Selection for Sign Up
+      let selectedCommutePref = 'rapido';
+      const commuteOptions = document.querySelectorAll('#commutePrefGrid .commute-pref-option');
+      commuteOptions.forEach(opt => {
+        opt.addEventListener('click', () => {
+          commuteOptions.forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          selectedCommutePref = opt.getAttribute('data-pref') || 'rapido';
+        });
+      });
+
+      // 4. Password Visibility Toggles
       document.querySelectorAll('.toggle-password-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const targetId = btn.getAttribute('data-target');
@@ -231,12 +389,12 @@
         try {
           const res = await window.Auth.login(email, password, remember);
           if (res.success) {
-            showToast(`🎉 Welcome back, ${res.user.name}!`, '🎉');
+            showToast(`Welcome back, ${res.user.name}!`, 'check');
             setTimeout(() => {
               window.Auth.redirectIfAuthenticated('index.html');
             }, 500);
           } else {
-            showToast(res.error, '⚠️');
+            showToast(res.error, 'alert');
             submitSignInBtn.disabled = false;
             submitSignInBtn.innerHTML = `<span>Sign In</span>
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -244,22 +402,65 @@
               </svg>`;
           }
         } catch (err) {
-          showToast('An error occurred during sign in.', '⚠️');
+          showToast('An error occurred during sign in.', 'alert');
           submitSignInBtn.disabled = false;
           submitSignInBtn.innerHTML = `<span>Sign In</span>`;
         }
       });
 
-      // 5. Toast Notification Helper
+      // 5. Sign Up Handler
+      const signUpNameInput = document.getElementById('signUpName');
+      const signUpEmailInput = document.getElementById('signUpEmail');
+      const signUpPasswordInput = document.getElementById('signUpPassword');
+      const submitSignUpBtn = document.getElementById('submitSignUpBtn');
+
+      signUpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = signUpNameInput.value.trim();
+        const email = signUpEmailInput.value.trim();
+        const password = signUpPasswordInput.value;
+
+        submitSignUpBtn.disabled = true;
+        submitSignUpBtn.innerHTML = `<span>Creating Account...</span>`;
+
+        try {
+          const res = await window.Auth.register({
+            name: name,
+            email: email,
+            password: password,
+            commutePref: selectedCommutePref
+          });
+
+          if (res.success) {
+            showToast(`Account created! Welcome, ${res.user.name}!`, 'check');
+            setTimeout(() => {
+              window.Auth.redirectIfAuthenticated('index.html');
+            }, 600);
+          } else {
+            showToast(res.error, 'alert');
+            submitSignUpBtn.disabled = false;
+            submitSignUpBtn.innerHTML = `<span>Create Account</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>`;
+          }
+        } catch (err) {
+          showToast('An error occurred during account creation.', 'alert');
+          submitSignUpBtn.disabled = false;
+          submitSignUpBtn.innerHTML = `<span>Create Account</span>`;
+        }
+      });
+
+      // 6. Toast Notification Helper
       let toastTimer = null;
-      function showToast(message, icon = '✨') {
+      function showToast(message, icon = 'check') {
         const toast = document.getElementById('toastNotification');
         const msg = document.getElementById('toastMessage');
         const ic = document.getElementById('toastIcon');
         if (!toast || !msg) return;
 
         msg.textContent = message;
-        if (ic) ic.textContent = icon;
+        if (ic) { if (window.AppIcons && window.AppIcons.get) { ic.innerHTML = window.AppIcons.get(icon, 18); } else { ic.textContent = ''; } }
         toast.style.display = 'flex';
 
         if (toastTimer) clearTimeout(toastTimer);

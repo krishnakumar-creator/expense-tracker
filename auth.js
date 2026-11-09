@@ -15,12 +15,12 @@
 
   // Map commute preferences to icons
   const COMMUTE_ICONS = {
-    rapido: '🛵',
-    auto: '🛺',
-    bus: '🚌',
-    train: '🚆',
-    fuel: '⛽',
-    other: '✨'
+    rapido: 'rapido',
+    auto: 'auto',
+    bus: 'bus',
+    train: 'train',
+    fuel: 'fuel',
+    other: 'other'
   };
 
   /**
@@ -96,6 +96,10 @@
      */
     _formatFirebaseError: function (err) {
       if (!err) return 'An unexpected error occurred.';
+      const msg = err.message || '';
+      if (msg.includes('requests-from-referer')) {
+        return 'Localhost blocked by Google API Key restrictions. Add http://localhost:3000/* to your API key allowed referrers in Google Cloud Console.';
+      }
       const code = err.code || '';
       switch (code) {
         case 'auth/invalid-email':
@@ -111,6 +115,12 @@
           return 'Password must be at least 6 characters long.';
         case 'auth/too-many-requests':
           return 'Too many failed attempts. Please wait a few moments and try again.';
+        case 'auth/unauthorized-domain':
+          return 'This domain is not authorized in Firebase Console (Authentication > Settings > Authorized domains). Add localhost or 127.0.0.1.';
+        case 'auth/operation-not-allowed':
+          return 'Email/Password sign-in is disabled. Enable it in Firebase Console (Authentication > Sign-in method).';
+        case 'auth/requests-from-referer':
+          return 'Requests from localhost:3000 are blocked by Google API key restrictions. Add http://localhost:3000/* to your API key in Google Cloud Console.';
         case 'auth/network-request-failed':
           return 'Network error. Please check your internet connection.';
         default:
@@ -199,7 +209,7 @@
             name: name.trim(),
             email: normalizedEmail,
             commutePref: commutePref,
-            avatar: COMMUTE_ICONS[commutePref] || '🛵',
+            avatar: COMMUTE_ICONS[commutePref] || 'rapido',
             tagline: `${(commutePref.charAt(0).toUpperCase() + commutePref.slice(1))} Commuter`,
             loginTime: Date.now(),
             isCloud: true,
@@ -230,7 +240,7 @@
         passwordHash: hash,
         salt: salt,
         commutePref: commutePref,
-        avatar: COMMUTE_ICONS[commutePref] || '🛵',
+        avatar: COMMUTE_ICONS[commutePref] || 'rapido',
         tagline: `${(commutePref.charAt(0).toUpperCase() + commutePref.slice(1))} Commuter`,
         createdAt: Date.now()
       };
@@ -293,7 +303,7 @@
             name: profile.name || fbUser.displayName || 'Commuter',
             email: fbUser.email,
             commutePref: profile.commutePref || 'rapido',
-            avatar: COMMUTE_ICONS[profile.commutePref] || '🛵',
+            avatar: COMMUTE_ICONS[profile.commutePref] || 'rapido',
             tagline: `${((profile.commutePref || 'rapido').charAt(0).toUpperCase() + (profile.commutePref || 'rapido').slice(1))} Commuter`,
             loginTime: Date.now(),
             isCloud: true,
@@ -337,7 +347,7 @@
         name: user.name,
         email: user.email,
         commutePref: user.commutePref || 'rapido',
-        avatar: user.avatar || COMMUTE_ICONS[user.commutePref] || '🛵',
+        avatar: user.avatar || COMMUTE_ICONS[user.commutePref] || 'rapido',
         tagline: user.tagline || 'Daily Commuter',
         loginTime: Date.now(),
         isCloud: false,
