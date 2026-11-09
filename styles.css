@@ -2369,111 +2369,201 @@ body {
 }
 
 /* ==========================================
-   SVG ICON ENHANCEMENTS & THEMING
+   PREMIUM SVG ICON DESIGN SYSTEM & SQUIRCLES
    ========================================== */
 .svg-icon {
   display: inline-block;
   vertical-align: middle;
   flex-shrink: 0;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Preset 1-Tap Chips */
+.preset-chip {
+  padding: 12px 14px;
+  min-width: 100px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.preset-chip:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-focus);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .preset-chip .chip-emoji {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 28px;
-  margin-bottom: 6px;
-  color: var(--primary);
-  transition: transform var(--transition);
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.preset-chip:hover .chip-emoji {
-  transform: scale(1.1);
-}
-.chip-rapido .chip-emoji { color: var(--cat-rapido); }
-.chip-auto .chip-emoji { color: var(--cat-auto); }
-.chip-bus .chip-emoji { color: var(--cat-bus); }
-.chip-train .chip-emoji { color: var(--cat-train); }
-.chip-tea .chip-emoji { color: var(--cat-tea); }
-.chip-food .chip-emoji { color: var(--cat-food); }
 
+.preset-chip:hover .chip-emoji {
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.chip-rapido .chip-emoji { background: rgba(245, 158, 11, 0.14); border-color: rgba(245, 158, 11, 0.3); color: #f59e0b; }
+.chip-auto .chip-emoji { background: rgba(16, 185, 129, 0.14); border-color: rgba(16, 185, 129, 0.3); color: #10b981; }
+.chip-bus .chip-emoji { background: rgba(56, 189, 248, 0.14); border-color: rgba(56, 189, 248, 0.3); color: #38bdf8; }
+.chip-train .chip-emoji { background: rgba(168, 85, 247, 0.14); border-color: rgba(168, 85, 247, 0.3); color: #c084fc; }
+.chip-tea .chip-emoji { background: rgba(251, 146, 60, 0.14); border-color: rgba(251, 146, 60, 0.3); color: #fb923c; }
+.chip-food .chip-emoji { background: rgba(244, 63, 94, 0.14); border-color: rgba(244, 63, 94, 0.3); color: #fb7185; }
+
+/* Category Cards Focus Badges */
 .cat-badge-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .travel-accent {
   background: rgba(99, 102, 241, 0.18);
+  border: 1px solid rgba(99, 102, 241, 0.3);
   color: #818cf8;
 }
 .food-accent {
   background: rgba(244, 63, 94, 0.18);
+  border: 1px solid rgba(244, 63, 94, 0.3);
   color: #fb7185;
 }
 
+/* Mini Stat Pills */
+.mini-stat-pill {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .mini-stat-pill .icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  margin-bottom: 4px;
+  justify-content: center;
+  margin-bottom: 2px;
 }
-#statRapido .icon { color: var(--cat-rapido); }
-#statAuto .icon { color: var(--cat-auto); }
-#statBus .icon { color: var(--cat-bus); }
-#statTrain .icon { color: var(--cat-train); }
-#statTea .icon { color: var(--cat-tea); }
-#statFood .icon { color: var(--cat-food); }
+#statRapido .icon { background: rgba(245, 158, 11, 0.14); color: #f59e0b; }
+#statAuto .icon { background: rgba(16, 185, 129, 0.14); color: #10b981; }
+#statBus .icon { background: rgba(56, 189, 248, 0.14); color: #38bdf8; }
+#statTrain .icon { background: rgba(168, 85, 247, 0.14); color: #c084fc; }
+#statTea .icon { background: rgba(251, 146, 60, 0.14); color: #fb923c; }
+#statFood .icon { background: rgba(244, 63, 94, 0.14); color: #fb7185; }
 
+/* Filter Chips */
 .filter-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 .filter-chip svg {
   flex-shrink: 0;
 }
 
+/* Bottom Sheet Modal Category Selector */
+.cat-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 6px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 .cat-option .cat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 28px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   color: var(--text-secondary);
-  transition: transform 0.15s ease, color 0.15s ease;
+  transition: all 0.2s ease;
+}
+.cat-option:hover {
+  border-color: var(--border-focus);
 }
 .cat-option:hover .cat-icon {
-  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
+  transform: translateY(-1px);
+}
+.cat-option.selected {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.12);
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.25);
 }
 .cat-option.selected .cat-icon {
-  color: var(--primary);
-  transform: scale(1.15);
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #818cf8;
+  transform: scale(1.06);
 }
 
+/* Payment Chips */
 .pay-chip {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 .pay-chip svg {
   flex-shrink: 0;
 }
 
+/* User Avatar Circle */
 .user-avatar-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #38bdf8);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+  flex-shrink: 0;
 }
 .user-avatar-circle svg {
   stroke: #ffffff;
+  stroke-width: 2.2;
 }
 
 .user-commute-pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 .user-commute-pill svg {
   flex-shrink: 0;
@@ -2505,6 +2595,30 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 12px auto;
+  margin: 0 auto 14px auto;
   color: var(--text-muted);
+}
+.empty-state-icon svg {
+  opacity: 0.65;
+}
+
+/* Expense Transaction Badge */
+.expense-cat-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s ease;
+}
+.expense-cat-badge svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+}
+.expense-item-card:hover .expense-cat-badge {
+  transform: scale(1.05);
 }
