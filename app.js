@@ -10,7 +10,8 @@ const CATEGORIES = {
   rapido: {
     id: 'rapido',
     name: 'Rapido',
-    icon: '🛵',
+    iconName: 'rapido',
+    get icon() { return window.AppIcons ? window.AppIcons.get('rapido', 22) : ''; },
     group: 'travel',
     color: '#f59e0b',
     badgeClass: 'badge-rapido',
@@ -20,7 +21,8 @@ const CATEGORIES = {
   auto: {
     id: 'auto',
     name: 'Auto Rickshaw',
-    icon: '🛺',
+    iconName: 'auto',
+    get icon() { return window.AppIcons ? window.AppIcons.get('auto', 22) : ''; },
     group: 'travel',
     color: '#10b981',
     badgeClass: 'badge-auto',
@@ -30,7 +32,8 @@ const CATEGORIES = {
   bus: {
     id: 'bus',
     name: 'Bus',
-    icon: '🚌',
+    iconName: 'bus',
+    get icon() { return window.AppIcons ? window.AppIcons.get('bus', 22) : ''; },
     group: 'travel',
     color: '#38bdf8',
     badgeClass: 'badge-bus',
@@ -40,7 +43,8 @@ const CATEGORIES = {
   train: {
     id: 'train',
     name: 'Train / Metro',
-    icon: '🚆',
+    iconName: 'train',
+    get icon() { return window.AppIcons ? window.AppIcons.get('train', 22) : ''; },
     group: 'travel',
     color: '#a855f7',
     badgeClass: 'badge-train',
@@ -50,7 +54,8 @@ const CATEGORIES = {
   tea: {
     id: 'tea',
     name: 'Tea & Snacks',
-    icon: '☕',
+    iconName: 'tea',
+    get icon() { return window.AppIcons ? window.AppIcons.get('tea', 22) : ''; },
     group: 'food',
     color: '#fb923c',
     badgeClass: 'badge-tea',
@@ -60,7 +65,8 @@ const CATEGORIES = {
   food: {
     id: 'food',
     name: 'Lunch & Food',
-    icon: '🍱',
+    iconName: 'food',
+    get icon() { return window.AppIcons ? window.AppIcons.get('food', 22) : ''; },
     group: 'food',
     color: '#f43f5e',
     badgeClass: 'badge-food',
@@ -70,7 +76,8 @@ const CATEGORIES = {
   fuel: {
     id: 'fuel',
     name: 'Fuel / Petrol',
-    icon: '⛽',
+    iconName: 'fuel',
+    get icon() { return window.AppIcons ? window.AppIcons.get('fuel', 22) : ''; },
     group: 'travel',
     color: '#ef4444',
     badgeClass: 'badge-fuel',
@@ -80,7 +87,8 @@ const CATEGORIES = {
   groceries: {
     id: 'groceries',
     name: 'Groceries',
-    icon: '🛒',
+    iconName: 'groceries',
+    get icon() { return window.AppIcons ? window.AppIcons.get('groceries', 22) : ''; },
     group: 'other',
     color: '#10b981',
     badgeClass: 'badge-groceries',
@@ -90,7 +98,8 @@ const CATEGORIES = {
   bills: {
     id: 'bills',
     name: 'Recharge & Bills',
-    icon: '📱',
+    iconName: 'bills',
+    get icon() { return window.AppIcons ? window.AppIcons.get('bills', 22) : ''; },
     group: 'other',
     color: '#3b82f6',
     badgeClass: 'badge-bills',
@@ -100,7 +109,8 @@ const CATEGORIES = {
   other: {
     id: 'other',
     name: 'Other Expense',
-    icon: '✨',
+    iconName: 'other',
+    get icon() { return window.AppIcons ? window.AppIcons.get('other', 22) : ''; },
     group: 'other',
     color: '#64748b',
     badgeClass: 'badge-other',
@@ -501,7 +511,7 @@ function renderExpensesList() {
     const isFiltered = state.categoryFilter !== 'all' || state.searchQuery.trim() !== '';
     container.innerHTML = `
       <div class="empty-state-card">
-        <div class="empty-state-icon">${isFiltered ? '🔍' : '🛵'}</div>
+        <div class="empty-state-icon">${isFiltered ? (window.AppIcons ? window.AppIcons.get('search', 42) : '') : (window.AppIcons ? window.AppIcons.get('ticket', 42) : '')}</div>
         <div class="empty-state-title">${isFiltered ? 'No matching expenses' : 'No expenses for this month'}</div>
         <p class="empty-state-desc">
           ${isFiltered 
@@ -586,10 +596,14 @@ function renderAnalytics() {
   
   const commuteBarsContainer = document.getElementById('travelModeBars');
   const modes = [
-    { key: 'rapido', label: 'Rapido (Bike Taxi)', icon: '🛵', color: 'var(--cat-rapido)' },
-    { key: 'auto', label: 'Auto Rickshaw', icon: '🛺', color: 'var(--cat-auto)' },
-    { key: 'bus', label: 'Bus Commute', icon: '🚌', color: 'var(--cat-bus)' },
-    { key: 'train', label: 'Train / Metro', icon: '🚆', color: 'var(--cat-train)' }
+    { key: 'rapido', label: 'Rapido (Bike Taxi)', iconName: 'rapido',
+    get icon() { return window.AppIcons ? window.AppIcons.get('rapido', 22) : ''; }, color: 'var(--cat-rapido)' },
+    { key: 'auto', label: 'Auto Rickshaw', iconName: 'auto',
+    get icon() { return window.AppIcons ? window.AppIcons.get('auto', 22) : ''; }, color: 'var(--cat-auto)' },
+    { key: 'bus', label: 'Bus Commute', iconName: 'bus',
+    get icon() { return window.AppIcons ? window.AppIcons.get('bus', 22) : ''; }, color: 'var(--cat-bus)' },
+    { key: 'train', label: 'Train / Metro', iconName: 'train',
+    get icon() { return window.AppIcons ? window.AppIcons.get('train', 22) : ''; }, color: 'var(--cat-train)' }
   ];
 
   let barsHtml = '';
@@ -600,7 +614,7 @@ function renderAnalytics() {
     barsHtml += `
       <div class="bar-item">
         <div class="bar-item-info">
-          <span>${mode.icon} ${mode.label} <small style="color:var(--text-muted)">(${data.count} trips)</small></span>
+          <span>${window.AppIcons ? window.AppIcons.get(mode.icon, 16) : ''} ${mode.label} <small style="color:var(--text-muted)">(${data.count} trips)</small></span>
           <span><strong>${formatCurrency(data.total)}</strong> <small style="color:var(--text-secondary)">(${pct}%)</small></span>
         </div>
         <div class="bar-track">
@@ -680,7 +694,7 @@ function renderDonutChart(stats) {
       <div class="legend-row">
         <div class="legend-left">
           <span class="legend-color-dot" style="background:${item.cat.color};"></span>
-          <span>${item.cat.icon} ${item.cat.name}</span>
+          <span style="display:inline-flex; align-items:center; gap:6px;">${window.AppIcons ? window.AppIcons.get(item.cat.iconName || item.key, 15) : ''} ${item.cat.name}</span>
         </div>
         <span class="legend-val">${formatCurrency(item.amount)} (${Math.round(pct * 100)}%)</span>
       </div>
@@ -848,14 +862,14 @@ function saveExpenseFromForm(e) {
   setTimeout(() => { isSavingExpense = false; }, 600);
   const amtVal = parseFloat(document.getElementById('formAmount').value);
   if (!amtVal || amtVal <= 0) {
-    showToast('⚠️ Please enter a valid expense amount');
+    showToast('Please enter a valid expense amount', 'alert');
     document.getElementById('formAmount').focus();
     return;
   }
 
   const dateVal = document.getElementById('formDate').value;
   if (!dateVal) {
-    showToast('⚠️ Please select a date');
+    showToast('Please select a date', 'alert');
     return;
   }
 
@@ -875,7 +889,7 @@ function saveExpenseFromForm(e) {
         date: dateVal,
         paymentMode: paymentVal
       };
-      showToast('✅ Expense updated successfully');
+      showToast('Expense updated successfully', 'check');
     }
   } else {
     // Create new
@@ -892,7 +906,7 @@ function saveExpenseFromForm(e) {
     state.expenses.unshift(newExpense);
     
     const cat = CATEGORIES[categoryVal] || CATEGORIES.other;
-    showToast(`✅ Added ${formatCurrency(amtVal)} for ${cat.name}`);
+    showToast(`Added ${formatCurrency(amtVal)} for ${cat.name}`, 'check');
   }
 
   saveExpensesToStorage();
@@ -909,7 +923,7 @@ function deleteExpense(id) {
       window.AppDB.deleteExpense(user.id, id);
     }
     refreshAllViews();
-    showToast('🗑️ Expense deleted');
+    showToast('Expense deleted', 'trash');
   }
 }
 
@@ -921,6 +935,9 @@ function refreshAllViews() {
   renderOverviewCards();
   renderExpensesList();
   renderAnalytics();
+  if (window.AppIcons && window.AppIcons.cleanDomEmojis) {
+    window.AppIcons.cleanDomEmojis();
+  }
 }
 
 function switchTab(tabId) {
@@ -946,7 +963,7 @@ function switchTab(tabId) {
 // 11. TOAST & HELPERS
 // ==========================================
 let toastTimeout;
-function showToast(message) {
+function showToast(message, icon = 'check') {
   const toast = document.getElementById('toastNotification');
   const msgEl = document.getElementById('toastMessage');
   msgEl.textContent = message;
@@ -1148,7 +1165,7 @@ function setupEventListeners() {
       state.settings.budget = val;
       saveSettingsToStorage();
       renderOverviewCards();
-      showToast('🎯 Budget updated!');
+      showToast('Budget updated!', 'target');
     }
   });
 
@@ -1159,7 +1176,7 @@ function setupEventListeners() {
       saveSettingsToStorage();
       applySettings();
       refreshAllViews();
-      showToast(`💱 Currency set to ${state.settings.currency}`);
+      showToast(`Currency set to ${state.settings.currency}`, 'currency');
     });
   });
 
@@ -1219,7 +1236,7 @@ function renderUserProfile() {
   const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : {
     name: 'Alex Morgan',
     email: 'alex@dailyspends.app',
-    avatar: '🛵',
+    avatar: 'rapido',
     commutePref: 'rapido'
   };
 
@@ -1234,22 +1251,23 @@ function renderUserProfile() {
   const pref = user.commutePref || 'commute';
   const prefFormatted = pref.charAt(0).toUpperCase() + pref.slice(1);
 
-  if (userAvatarCircle) userAvatarCircle.textContent = user.avatar || '🛵';
+  const avatarIcon = user.commutePref || (typeof user.avatar === 'string' && user.avatar.length < 15 ? user.avatar : 'rapido');
+  if (userAvatarCircle) userAvatarCircle.innerHTML = window.AppIcons ? window.AppIcons.get(avatarIcon, 18) : '';
   if (userProfileName) userProfileName.textContent = firstName;
-  if (menuUserAvatarCircle) menuUserAvatarCircle.textContent = user.avatar || '🛵';
+  if (menuUserAvatarCircle) menuUserAvatarCircle.innerHTML = window.AppIcons ? window.AppIcons.get(avatarIcon, 20) : '';
   if (menuUserName) menuUserName.textContent = user.name || 'User';
   if (menuUserEmail) menuUserEmail.textContent = user.email || '';
-  if (menuUserCommutePill) menuUserCommutePill.textContent = `${user.avatar || '🛵'} ${prefFormatted} Commuter`;
+  if (menuUserCommutePill) menuUserCommutePill.innerHTML = `${window.AppIcons ? window.AppIcons.get(avatarIcon, 13) : ''} <span>${prefFormatted} Commuter</span>`;
 
   const menuCloudStatusPill = document.getElementById('menuCloudStatusPill');
   if (menuCloudStatusPill) {
     const isCloud = Boolean(window.AppDB && window.AppDB.isCloudActive());
     if (isCloud) {
-      menuCloudStatusPill.textContent = '☁️ Cloud DB Synced';
+      menuCloudStatusPill.innerHTML = `${window.AppIcons ? window.AppIcons.get('cloud', 13) : ''} <span>Cloud DB Synced</span>`;
       menuCloudStatusPill.style.background = 'rgba(16, 185, 129, 0.15)';
       menuCloudStatusPill.style.color = '#10b981';
     } else {
-      menuCloudStatusPill.textContent = '💾 Local Mode';
+      menuCloudStatusPill.innerHTML = `${window.AppIcons ? window.AppIcons.get('card', 13) : ''} <span>Local Mode</span>`;
       menuCloudStatusPill.style.background = 'rgba(99, 102, 241, 0.15)';
       menuCloudStatusPill.style.color = 'var(--primary)';
     }
