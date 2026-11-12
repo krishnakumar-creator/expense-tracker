@@ -17,6 +17,10 @@ A mobile-first, ultra-responsive web application designed for tracking daily tra
   - **Multi-user isolation**: Each user gets their own dedicated cloud database space.
   - Show/hide password toggle, live password strength meter, and password recovery.
   - Profile badge & dropdown menu in header with live **Cloud Synced** status and **Sign Out**.
+- **🧭 Floating Bottom Navigator**:
+  - **Home**: Instantly view the main dashboard, monthly overview cards, transit focus breakdown, and expenses feed.
+  - **Notes**: Capture quick personal commute memos, driver contacts, travel reminders, and explore all logged route notes.
+  - **Calendar**: Interactive monthly spending calendar showing daily expense indicators, day-by-day breakdowns, and 1-tap logging for any selected date.
 - **🛵 Transit & Routine Daily Spends**:
   - Dedicated categories for **Rapido**, **Auto**, **Bus**, and **Train/Metro** with automatic commute stats.
   - Track routine spends like **Tea & Snacks**, **Lunch/Meals**, **Fuel**, **Groceries**, and **Recharge/Bills**.

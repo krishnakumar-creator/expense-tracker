@@ -127,6 +127,25 @@ function getSettingsKey() {
   const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
   return user ? `dailyspends_settings_${user.id}` : 'dailyspends_settings_v1';
 }
+function getMemosKey() {
+  const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
+  return user ? `dailyspends_memos_${user.id}` : 'dailyspends_memos_v1';
+}
+
+function loadMemos() {
+  try {
+    const raw = localStorage.getItem(getMemosKey());
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveMemos(memos) {
+  try {
+    localStorage.setItem(getMemosKey(), JSON.stringify(memos));
+  } catch (e) {}
+}
 
 // ==========================================
 // 2. APPLICATION STATE
@@ -141,6 +160,9 @@ let state = {
   currentYear: 2026,
   currentMonth: 9, // 0-indexed: 9 = October
   activeTab: 'tab-list',
+  currentMainView: 'home', // 'home' | 'notes' | 'calendar'
+  selectedCalendarDate: null,
+  selectedMemoTag: 'General',
   categoryFilter: 'all',
   searchQuery: '',
   modalSelectedCategory: 'rapido',
@@ -152,6 +174,7 @@ let state = {
 const today = new Date();
 state.currentYear = today.getFullYear();
 state.currentMonth = today.getMonth();
+state.selectedCalendarDate = getFormattedDate(today);
 
 // ==========================================
 // 3. SAMPLE DEMO COMMUTE DATA GENERATOR
@@ -745,7 +768,7 @@ function renderDailyChart(stats) {
 // ==========================================
 // 8. MODAL / BOTTOM SHEET INTERACTIONS
 // ==========================================
-function openExpenseModal(category = 'rapido', defaultAmount = null) {
+function openExpenseModal(category = 'rapido', defaultAmount = null, targetDate = null) {
   state.editingExpenseId = null;
   document.getElementById('modalTitle').textContent = 'Log Expense';
   document.getElementById('saveBtnText').textContent = 'Save Expense';
@@ -766,10 +789,14 @@ function openExpenseModal(category = 'rapido', defaultAmount = null) {
   document.getElementById('formNote').value = '';
   document.getElementById('formNote').placeholder = cat.quickNote || 'e.g. Office to Home';
 
-  // Date default today
-  const todayStr = getFormattedDate();
-  document.getElementById('formDate').value = todayStr;
-  updateDateChipSelection('today');
+  // Date default or specified date
+  const dateStr = targetDate || getFormattedDate();
+  document.getElementById('formDate').value = dateStr;
+  if (dateStr === getFormattedDate()) {
+    updateDateChipSelection('today');
+  } else {
+    updateDateChipSelection(null);
+  }
 
   // Payment default UPI
   selectPaymentMode('UPI');
@@ -930,11 +957,36 @@ function deleteExpense(id) {
 // ==========================================
 // 9. REFRESH & VIEW TOGGLING
 // ==========================================
+function goToPrevMonth() {
+  if (state.currentMonth === 0) {
+    state.currentMonth = 11;
+    state.currentYear -= 1;
+  } else {
+    state.currentMonth -= 1;
+  }
+  refreshAllViews();
+}
+
+function goToNextMonth() {
+  if (state.currentMonth === 11) {
+    state.currentMonth = 0;
+    state.currentYear += 1;
+  } else {
+    state.currentMonth += 1;
+  }
+  refreshAllViews();
+}
+
 function refreshAllViews() {
   updateMonthDisplay();
   renderOverviewCards();
   renderExpensesList();
   renderAnalytics();
+  if (state.currentMainView === 'notes') {
+    renderNotesView();
+  } else if (state.currentMainView === 'calendar') {
+    renderCalendarView();
+  }
   if (window.AppIcons && window.AppIcons.cleanDomEmojis) {
     window.AppIcons.cleanDomEmojis();
   }
@@ -951,6 +1003,321 @@ function switchTab(tabId) {
 
   if (tabId === 'tab-analytics') {
     renderAnalytics();
+  }
+}
+
+function switchMainView(viewName) {
+  state.currentMainView = viewName;
+
+  // Update floating bottom nav button active states
+  document.querySelectorAll('.bottom-nav-item').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-view') === viewName);
+  });
+
+  // Toggle main views
+  const homeView = document.getElementById('mainHomeView');
+  const notesView = document.getElementById('mainNotesView');
+  const calendarView = document.getElementById('mainCalendarView');
+
+  if (homeView) homeView.style.display = viewName === 'home' ? 'block' : 'none';
+  if (notesView) notesView.style.display = viewName === 'notes' ? 'block' : 'none';
+  if (calendarView) calendarView.style.display = viewName === 'calendar' ? 'block' : 'none';
+
+  if (viewName === 'home') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    renderOverviewCards();
+    renderExpensesList();
+  } else if (viewName === 'notes') {
+    renderNotesView();
+  } else if (viewName === 'calendar') {
+    renderCalendarView();
+  }
+
+  if (window.AppIcons && window.AppIcons.cleanDomEmojis) {
+    window.AppIcons.cleanDomEmojis();
+  }
+}
+
+// ------------------------------------------
+// NOTES & MEMOS VIEW LOGIC
+// ------------------------------------------
+function renderNotesView() {
+  const memos = loadMemos();
+  const memoBadge = document.getElementById('notesCountBadge');
+  const memosCountPill = document.getElementById('memosCountPill');
+  const expenseNotesCountPill = document.getElementById('expenseNotesCountPill');
+
+  // Filter expenses that have notes
+  const expenseNotes = state.expenses.filter(item => item.note && item.note.trim() !== '');
+
+  const totalNotesCount = memos.length + expenseNotes.length;
+  if (memoBadge) memoBadge.textContent = `${totalNotesCount} total ${totalNotesCount === 1 ? 'note' : 'notes'}`;
+  if (memosCountPill) memosCountPill.textContent = memos.length;
+  if (expenseNotesCountPill) expenseNotesCountPill.textContent = expenseNotes.length;
+
+  // Render Memos List
+  const memosContainer = document.getElementById('memosListContainer');
+  if (memosContainer) {
+    if (memos.length === 0) {
+      memosContainer.innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1; padding: 36px 16px;">
+          <div class="empty-state-icon">
+            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" x2="8" y1="13" x2="13"/>
+              <line x1="16" x2="8" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <h3>No Memos Yet</h3>
+          <p class="empty-state-desc">Use the composer above to jot down quick spend reminders, driver UPI IDs, or travel notes.</p>
+        </div>
+      `;
+    } else {
+      memosContainer.innerHTML = memos.map(m => {
+        const tagLower = (m.tag || 'general').toLowerCase();
+        return `
+          <div class="memo-card">
+            <div class="memo-card-header">
+              <span class="memo-card-tag tag-${escapeHtml(tagLower)}">${escapeHtml(m.tag || 'General')}</span>
+              <span class="memo-card-time">${escapeHtml(m.createdAt || '')}</span>
+            </div>
+            <div class="memo-card-text">${escapeHtml(m.text)}</div>
+            <div class="memo-card-footer">
+              <button type="button" class="memo-delete-btn" onclick="handleDeleteMemo('${escapeHtml(m.id)}')" title="Delete memo">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // Render Expense Routes & Notes Feed
+  const expenseNotesContainer = document.getElementById('expenseNotesListContainer');
+  if (expenseNotesContainer) {
+    if (expenseNotes.length === 0) {
+      expenseNotesContainer.innerHTML = `
+        <div class="empty-state" style="padding: 36px 16px;">
+          <div class="empty-state-icon">
+            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+            </svg>
+          </div>
+          <h3>No Logged Route Notes</h3>
+          <p class="empty-state-desc">When you log an expense with a route, merchant, or note (e.g. "Office to Home", "Chai with team"), it will appear here.</p>
+        </div>
+      `;
+    } else {
+      expenseNotesContainer.innerHTML = expenseNotes.map(item => {
+        const cat = CATEGORIES[item.category] || CATEGORIES.other;
+        const iconSvg = cat.icon;
+        const badgeClass = cat.badgeClass || 'badge-other';
+        const formattedDate = formatDateDisplay(item.date);
+        return `
+          <div class="expense-note-item" onclick="openEditModal('${escapeHtml(item.id)}')">
+            <div class="expense-note-left">
+              <div class="expense-note-icon ${badgeClass}">
+                ${iconSvg}
+              </div>
+              <div class="expense-note-info">
+                <span class="expense-note-text">${escapeHtml(item.note)}</span>
+                <span class="expense-note-meta">${escapeHtml(cat.name)} • ${formattedDate} ${item.paymentMode ? '• ' + escapeHtml(item.paymentMode) : ''}</span>
+              </div>
+            </div>
+            <div class="expense-note-amount">
+              ${formatCurrency(item.amount)}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+}
+
+function handleSaveMemo() {
+  const input = document.getElementById('memoInput');
+  const text = (input ? input.value : '').trim();
+  if (!text) {
+    showToast('Please type a note first', 'alert');
+    if (input) input.focus();
+    return;
+  }
+
+  const tag = state.selectedMemoTag || 'General';
+  const newMemo = {
+    id: 'memo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+    text: text,
+    tag: tag,
+    createdAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  };
+
+  const memos = loadMemos();
+  memos.unshift(newMemo);
+  saveMemos(memos);
+
+  if (input) input.value = '';
+  renderNotesView();
+  showToast('Memo saved!', 'check');
+}
+
+function handleDeleteMemo(id) {
+  let memos = loadMemos();
+  memos = memos.filter(m => m.id !== id);
+  saveMemos(memos);
+  renderNotesView();
+  showToast('Memo removed', 'trash');
+}
+
+// ------------------------------------------
+// CALENDAR VIEW LOGIC
+// ------------------------------------------
+function renderCalendarView() {
+  const year = state.currentYear;
+  const month = state.currentMonth; // 0-indexed
+
+  // Month Title
+  const monthTitle = document.getElementById('calCurrentMonthTitle');
+  if (monthTitle) {
+    monthTitle.textContent = `${MONTH_NAMES[month]} ${year}`;
+  }
+
+  // Calculate monthly stats for calendar
+  const stats = calculateMonthStats();
+  const calMonthTotalBadge = document.getElementById('calendarMonthTotalBadge');
+  if (calMonthTotalBadge) {
+    calMonthTotalBadge.textContent = `${formatCurrency(stats.totalSpent)} this month`;
+  }
+
+  // If no selectedCalendarDate or it doesn't belong to this month, set default
+  if (!state.selectedCalendarDate) {
+    state.selectedCalendarDate = getFormattedDate();
+  }
+
+  // Days in month
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const firstDayIndex = new Date(year, month, 1).getDay(); // 0 = Sunday
+
+  // Aggregate expenses for this month by date: 'YYYY-MM-DD' -> { total: number, items: [] }
+  const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
+  const daySpendMap = {};
+
+  state.expenses.forEach(item => {
+    if (item.date && item.date.startsWith(monthPrefix)) {
+      if (!daySpendMap[item.date]) {
+        daySpendMap[item.date] = { total: 0, items: [] };
+      }
+      daySpendMap[item.date].total += Number(item.amount) || 0;
+      daySpendMap[item.date].items.push(item);
+    }
+  });
+
+  const todayStr = getFormattedDate();
+  const daysGrid = document.getElementById('calendarDaysGrid');
+  if (!daysGrid) return;
+
+  let gridHtml = '';
+
+  // Leading empty cells
+  for (let i = 0; i < firstDayIndex; i++) {
+    gridHtml += `<div class="cal-day-cell is-empty"></div>`;
+  }
+
+  // Month day cells
+  for (let d = 1; d <= totalDays; d++) {
+    const dateStr = `${monthPrefix}-${String(d).padStart(2, '0')}`;
+    const dayData = daySpendMap[dateStr];
+    const isToday = (dateStr === todayStr);
+    const isSelected = (dateStr === state.selectedCalendarDate);
+
+    let cellClasses = ['cal-day-cell'];
+    if (isToday) cellClasses.push('is-today');
+    if (isSelected) cellClasses.push('is-selected');
+
+    let spendBadge = '';
+    if (dayData && dayData.total > 0) {
+      const isHigh = dayData.total > 200;
+      spendBadge = `<span class="cal-day-spend ${isHigh ? 'high-spend' : ''}">${formatCurrency(dayData.total)}</span>`;
+    }
+
+    gridHtml += `
+      <div class="${cellClasses.join(' ')}" data-date="${dateStr}" onclick="handleCalendarDateClick('${dateStr}')">
+        <span class="cal-day-num">${d}</span>
+        ${spendBadge}
+      </div>
+    `;
+  }
+
+  daysGrid.innerHTML = gridHtml;
+
+  // Render Selected Day Details
+  renderSelectedDayCard(state.selectedCalendarDate);
+}
+
+function handleCalendarDateClick(dateStr) {
+  state.selectedCalendarDate = dateStr;
+  
+  // Update selected class in DOM directly for instant response
+  document.querySelectorAll('.cal-day-cell').forEach(cell => {
+    cell.classList.toggle('is-selected', cell.getAttribute('data-date') === dateStr);
+  });
+
+  renderSelectedDayCard(dateStr);
+}
+
+function renderSelectedDayCard(dateStr) {
+  const card = document.getElementById('selectedDayCard');
+  if (!card) return;
+
+  const labelEl = document.getElementById('selectedDayLabel');
+  const badgeEl = document.getElementById('selectedDayTotalBadge');
+  const listEl = document.getElementById('selectedDayExpensesList');
+
+  // Format date header: e.g. "Thursday, Nov 12, 2026"
+  const dateParts = (dateStr || getFormattedDate()).split('-');
+  const dateObj = new Date(Number(dateParts[0]), Number(dateParts[1]) - 1, Number(dateParts[2]));
+  const formattedDayStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+  if (labelEl) labelEl.textContent = formattedDayStr;
+
+  // Find expenses for this day
+  const dayExpenses = state.expenses.filter(item => item.date === dateStr);
+  const dayTotal = dayExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+
+  if (badgeEl) {
+    badgeEl.textContent = `${formatCurrency(dayTotal)} spent (${dayExpenses.length} ${dayExpenses.length === 1 ? 'item' : 'items'})`;
+  }
+
+  if (listEl) {
+    if (dayExpenses.length === 0) {
+      listEl.innerHTML = `
+        <div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.84rem;">
+          No expenses logged on this day. Tap "+ Log for this Day" to add one!
+        </div>
+      `;
+    } else {
+      listEl.innerHTML = dayExpenses.map(item => {
+        const cat = CATEGORIES[item.category] || CATEGORIES.other;
+        return `
+          <div class="expense-note-item" onclick="openEditModal('${escapeHtml(item.id)}')">
+            <div class="expense-note-left">
+              <div class="expense-note-icon ${escapeHtml(cat.badgeClass || 'badge-other')}">
+                ${cat.icon}
+              </div>
+              <div class="expense-note-info">
+                <span class="expense-note-text">${escapeHtml(item.note || cat.name)}</span>
+                <span class="expense-note-meta">${escapeHtml(cat.name)} ${item.time ? '• ' + escapeHtml(item.time) : ''} ${item.paymentMode ? '• ' + escapeHtml(item.paymentMode) : ''}</span>
+              </div>
+            </div>
+            <div class="expense-note-amount">
+              ${formatCurrency(item.amount)}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
   }
 }
 
@@ -1014,25 +1381,8 @@ function setupEventListeners() {
   });
 
   // Month navigation
-  document.getElementById('prevMonthBtn').addEventListener('click', () => {
-    if (state.currentMonth === 0) {
-      state.currentMonth = 11;
-      state.currentYear -= 1;
-    } else {
-      state.currentMonth -= 1;
-    }
-    refreshAllViews();
-  });
-
-  document.getElementById('nextMonthBtn').addEventListener('click', () => {
-    if (state.currentMonth === 11) {
-      state.currentMonth = 0;
-      state.currentYear += 1;
-    } else {
-      state.currentMonth += 1;
-    }
-    refreshAllViews();
-  });
+  document.getElementById('prevMonthBtn').addEventListener('click', goToPrevMonth);
+  document.getElementById('nextMonthBtn').addEventListener('click', goToNextMonth);
 
   document.getElementById('jumpCurrentMonthBtn').addEventListener('click', () => {
     const now = new Date();
@@ -1171,6 +1521,77 @@ function setupEventListeners() {
     });
   });
 
+  // Floating Bottom Navigator (Home, Notes, Calendar)
+  document.querySelectorAll('.bottom-nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const view = btn.getAttribute('data-view');
+      if (view) switchMainView(view);
+    });
+  });
+
+  // Notes Subtabs
+  const subtabMemosBtn = document.getElementById('subtabMemosBtn');
+  const subtabExpenseNotesBtn = document.getElementById('subtabExpenseNotesBtn');
+  if (subtabMemosBtn && subtabExpenseNotesBtn) {
+    subtabMemosBtn.addEventListener('click', () => {
+      subtabMemosBtn.classList.add('active');
+      subtabExpenseNotesBtn.classList.remove('active');
+      const mList = document.getElementById('memosListContainer');
+      const eList = document.getElementById('expenseNotesListContainer');
+      if (mList) mList.style.display = 'grid';
+      if (eList) eList.style.display = 'none';
+    });
+    subtabExpenseNotesBtn.addEventListener('click', () => {
+      subtabExpenseNotesBtn.classList.add('active');
+      subtabMemosBtn.classList.remove('active');
+      const mList = document.getElementById('memosListContainer');
+      const eList = document.getElementById('expenseNotesListContainer');
+      if (mList) mList.style.display = 'none';
+      if (eList) eList.style.display = 'flex';
+    });
+  }
+
+  // Memo Tag Selection
+  document.querySelectorAll('.memo-tag-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.memo-tag-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.selectedMemoTag = btn.getAttribute('data-tag') || 'General';
+    });
+  });
+
+  // Save Memo Button
+  const saveMemoBtn = document.getElementById('saveMemoBtn');
+  if (saveMemoBtn) {
+    saveMemoBtn.addEventListener('click', handleSaveMemo);
+  }
+
+  // Calendar Navigation
+  const calPrevBtn = document.getElementById('calPrevMonthBtn');
+  if (calPrevBtn) calPrevBtn.addEventListener('click', goToPrevMonth);
+
+  const calNextBtn = document.getElementById('calNextMonthBtn');
+  if (calNextBtn) calNextBtn.addEventListener('click', goToNextMonth);
+
+  const calJumpTodayBtn = document.getElementById('calJumpTodayBtn');
+  if (calJumpTodayBtn) {
+    calJumpTodayBtn.addEventListener('click', () => {
+      const now = new Date();
+      state.currentYear = now.getFullYear();
+      state.currentMonth = now.getMonth();
+      state.selectedCalendarDate = getFormattedDate(now);
+      refreshAllViews();
+    });
+  }
+
+  // Calendar Log for this day button
+  const calLogExpenseBtn = document.getElementById('calLogExpenseBtn');
+  if (calLogExpenseBtn) {
+    calLogExpenseBtn.addEventListener('click', () => {
+      openExpenseModal('rapido', null, state.selectedCalendarDate || getFormattedDate());
+    });
+  }
+
   // User Profile Dropdown & Session Events
   setupUserProfileEvents();
 
@@ -1181,6 +1602,12 @@ function setupEventListeners() {
     }
   });
 }
+
+// Global function exports for inline onclick listeners
+window.handleDeleteMemo = handleDeleteMemo;
+window.handleCalendarDateClick = handleCalendarDateClick;
+window.openEditModal = editExpense;
+window.switchMainView = switchMainView;
 
 // ==========================================
 function setupUserProfileEvents() {

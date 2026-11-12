@@ -22,7 +22,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -30,7 +30,7 @@
 
   <!-- Cloud Services & DB Layer -->
   <script src="firebase-config.js"></script>
-  <script src="icons.js?v=2"></script>
+  <script src="icons.js?v=3"></script>
   <script src="db.js?v=2"></script>
   <script src="auth.js?v=2"></script>
   <script>
@@ -133,7 +133,10 @@
       </div>
     </header>
 
-    <!-- Month Navigation Bar -->
+    <!-- MAIN VIEW 1: HOME (Dashboard, Overview & Tabs) -->
+    <div id="mainHomeView" class="main-view active">
+
+      <!-- Month Navigation Bar -->
     <section class="month-navigator">
       <button id="prevMonthBtn" class="nav-arrow" aria-label="Previous Month">
         <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
@@ -403,6 +406,138 @@
         </div>
       </div>
     </div>
+    <!-- END MAIN VIEW 1: HOME -->
+
+    <!-- MAIN VIEW 2: NOTES & MEMOS VIEW -->
+    <div id="mainNotesView" class="main-view" style="display: none;">
+      <div class="view-header-card">
+        <div class="view-header-info">
+          <h2>Notes & Commute Memos</h2>
+          <p>Quick spend reminders, travel notes & merchant logs</p>
+        </div>
+        <div class="view-header-badge">
+          <span id="notesCountBadge">0 notes</span>
+        </div>
+      </div>
+
+      <!-- Quick Memo Composer -->
+      <div class="memo-composer-card">
+        <div class="memo-composer-header">
+          <span class="memo-title-label">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+            </svg>
+            <span>New Memo / Quick Note</span>
+          </span>
+          <span class="memo-hint">Saved automatically</span>
+        </div>
+        <div class="memo-composer-body">
+          <textarea id="memoInput" rows="3" placeholder="Type a reminder, driver UPI contact, route pass note, or pending spend..." maxlength="500"></textarea>
+          <div class="memo-composer-footer">
+            <div class="memo-tag-selector" id="memoTagSelector">
+              <button type="button" class="memo-tag-btn active" data-tag="General">General</button>
+              <button type="button" class="memo-tag-btn" data-tag="Commute">Commute</button>
+              <button type="button" class="memo-tag-btn" data-tag="Food">Food</button>
+              <button type="button" class="memo-tag-btn" data-tag="Reminder">Reminder</button>
+            </div>
+            <button type="button" id="saveMemoBtn" class="btn btn-primary btn-sm">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              <span>Add Memo</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes Sub-Tabs: Personal Memos vs Logged Route Notes -->
+      <div class="notes-subtabs">
+        <button type="button" class="notes-subtab-btn active" id="subtabMemosBtn" data-subtab="memos">
+          <span>Personal Memos</span>
+          <span class="subtab-badge" id="memosCountPill">0</span>
+        </button>
+        <button type="button" class="notes-subtab-btn" id="subtabExpenseNotesBtn" data-subtab="expense-notes">
+          <span>Expense Route Notes</span>
+          <span class="subtab-badge" id="expenseNotesCountPill">0</span>
+        </button>
+      </div>
+
+      <!-- Section A: Personal Memos Grid -->
+      <div id="memosListContainer" class="memos-grid">
+        <!-- Rendered dynamically by JS -->
+      </div>
+
+      <!-- Section B: Logged Expense Route Notes Feed -->
+      <div id="expenseNotesListContainer" class="expense-notes-feed" style="display: none;">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </div>
+
+    <!-- MAIN VIEW 3: SPEND CALENDAR VIEW -->
+    <div id="mainCalendarView" class="main-view" style="display: none;">
+      <div class="view-header-card">
+        <div class="view-header-info">
+          <h2>Spend Calendar</h2>
+          <p>Daily expenditures and ride activity overview</p>
+        </div>
+        <div class="view-header-badge">
+          <span id="calendarMonthTotalBadge">₹0 this month</span>
+        </div>
+      </div>
+
+      <!-- Interactive Calendar Card -->
+      <div class="calendar-card">
+        <!-- Calendar Month Bar -->
+        <div class="calendar-nav-bar">
+          <button type="button" id="calPrevMonthBtn" class="nav-arrow" aria-label="Previous Month">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="cal-month-title-wrap">
+            <h3 id="calCurrentMonthTitle">October 2026</h3>
+            <button type="button" id="calJumpTodayBtn" class="badge-btn">This Month</button>
+          </div>
+          <button type="button" id="calNextMonthBtn" class="nav-arrow" aria-label="Next Month">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Weekday Headers -->
+        <div class="calendar-weekdays-grid">
+          <span>Sun</span>
+          <span>Mon</span>
+          <span>Tue</span>
+          <span>Wed</span>
+          <span>Thu</span>
+          <span>Fri</span>
+          <span>Sat</span>
+        </div>
+
+        <!-- Days Grid -->
+        <div class="calendar-days-grid" id="calendarDaysGrid">
+          <!-- Rendered dynamically by JS -->
+        </div>
+      </div>
+
+      <!-- Selected Day Details Card -->
+      <div class="selected-day-card" id="selectedDayCard">
+        <div class="selected-day-header">
+          <div class="selected-day-title-wrap">
+            <h4 id="selectedDayLabel">October 26, 2026</h4>
+            <span class="day-total-badge" id="selectedDayTotalBadge">₹0 spent</span>
+          </div>
+          <button type="button" id="calLogExpenseBtn" class="btn btn-primary btn-sm">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Log for this Day</span>
+          </button>
+        </div>
+        <div class="selected-day-expenses-list" id="selectedDayExpensesList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
 
     <!-- Floating Action Button for Mobile Add -->
     <button id="fabAddBtn" class="floating-add-btn" aria-label="Add New Expense">
@@ -412,6 +547,44 @@
       </svg>
       <span class="fab-text">Add Expense</span>
     </button>
+
+    <!-- Floating Bottom Navigator (Home, Notes, Calendar) -->
+    <nav class="floating-bottom-nav" id="floatingBottomNav" aria-label="Bottom Navigation">
+      <button type="button" class="bottom-nav-item active" data-view="home" id="navHomeBtn" aria-label="Home">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </span>
+        <span class="nav-label">Home</span>
+      </button>
+
+      <button type="button" class="bottom-nav-item" data-view="notes" id="navNotesBtn" aria-label="Notes">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" x2="8" y1="13" x2="8" y2="13"/>
+            <line x1="16" x2="8" y1="17" x2="8" y2="17"/>
+            <line x1="10" x2="8" y1="9" x2="8" y2="9"/>
+          </svg>
+        </span>
+        <span class="nav-label">Notes</span>
+      </button>
+
+      <button type="button" class="bottom-nav-item" data-view="calendar" id="navCalendarBtn" aria-label="Calendar">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+            <line x1="16" x2="16" y1="2" y2="6"/>
+            <line x1="8" x2="8" y1="2" y2="6"/>
+            <line x1="3" x2="21" y1="10" y2="10"/>
+          </svg>
+        </span>
+        <span class="nav-label">Calendar</span>
+      </button>
+    </nav>
 
     <!-- Bottom Sheet / Modal: Add & Edit Expense -->
     <div id="expenseModalOverlay" class="modal-overlay" style="display: none;">
@@ -540,7 +713,7 @@
 
   </div>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 
 </html>
