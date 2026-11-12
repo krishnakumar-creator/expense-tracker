@@ -516,7 +516,7 @@ function renderExpensesList() {
         <p class="empty-state-desc">
           ${isFiltered 
             ? 'Try clearing the search or category filter to view all items.' 
-            : 'Tap any quick-add icon above or the "+ Add Expense" button to log your first commute or food expense.'}
+            : 'Tap the "+ Log First Expense" button or the "+ Add Expense" button to log your commute or food expense.'}
         </p>
         ${!isFiltered ? `<button class="btn btn-primary" onclick="openExpenseModal('rapido')">+ Log First Expense</button>` : ''}
       </div>
@@ -1056,15 +1056,6 @@ function setupEventListeners() {
       }
     });
   }
-
-  // Quick 1-Tap Presets
-  document.querySelectorAll('.preset-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const cat = chip.getAttribute('data-category');
-      const defAmt = chip.getAttribute('data-default');
-      openExpenseModal(cat, defAmt);
-    });
-  });
 
   // Floating Action Button
   document.getElementById('fabAddBtn').addEventListener('click', () => {

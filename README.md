@@ -17,13 +17,9 @@ A mobile-first, ultra-responsive web application designed for tracking daily tra
   - **Multi-user isolation**: Each user gets their own dedicated cloud database space.
   - Show/hide password toggle, live password strength meter, and password recovery.
   - Profile badge & dropdown menu in header with live **Cloud Synced** status and **Sign Out**.
-- **⚡ 1-Tap Quick Commute Presets**:
-  - 🛵 **Rapido**: Log bike taxi fares in 2 seconds.
-  - 🛺 **Auto**: Track auto rickshaw meters / fixed fares.
-  - 🚌 **Bus**: Commute tickets and daily passes.
-  - 🚆 **Train / Metro**: Metro card recharges and local train tickets.
-  - ☕ **Tea & Snacks**: Daily chai breaks, puff, and evening snacks.
-  - 🍱 **Lunch & Food**: Daily lunch thalis, meals, mess fees.
+- **🛵 Transit & Routine Daily Spends**:
+  - Dedicated categories for **Rapido**, **Auto**, **Bus**, and **Train/Metro** with automatic commute stats.
+  - Track routine spends like **Tea & Snacks**, **Lunch/Meals**, **Fuel**, **Groceries**, and **Recharge/Bills**.
 - **📅 Monthly Tracking & Navigation**:
   - Month-by-month picker with previous/next navigation.
   - Dedicated Monthly Summary Card showing **Total Spent** vs. **Monthly Budget**.
