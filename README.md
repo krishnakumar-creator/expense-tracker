@@ -20,7 +20,7 @@ A mobile-first, ultra-responsive web application designed for tracking daily tra
 - **🧭 Floating Bottom Navigator**:
   - **Home**: Instantly view the main dashboard, monthly overview cards, transit focus breakdown, and expenses feed.
   - **Notes**: Capture quick personal commute memos, driver contacts, travel reminders, and explore all logged route notes.
-  - **Calendar**: Interactive monthly spending calendar showing daily expense indicators, day-by-day breakdowns, and 1-tap logging for any selected date.
+  - **Reminders**: Dedicated Bill & Transit Reminders view to set alerts for Metro card recharges, monthly bus passes, Wi-Fi recharge, and mess dues with customizable frequencies (Once, Weekly, Monthly), status badges (Due Today, Overdue, Upcoming, Completed), quick suggestion chips, and 1-tap "Log as Expense" conversion.
 - **🛵 Transit & Routine Daily Spends**:
   - Dedicated categories for **Rapido**, **Auto**, **Bus**, and **Train/Metro** with automatic commute stats.
   - Track routine spends like **Tea & Snacks**, **Lunch/Meals**, **Fuel**, **Groceries**, and **Recharge/Bills**.

@@ -147,6 +147,26 @@ function saveMemos(memos) {
   } catch (e) {}
 }
 
+function getRemindersKey() {
+  const user = (window.Auth && window.Auth.getCurrentUser) ? window.Auth.getCurrentUser() : null;
+  return user ? `dailyspends_reminders_${user.id}` : 'dailyspends_reminders_v1';
+}
+
+function loadReminders() {
+  try {
+    const raw = localStorage.getItem(getRemindersKey());
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveReminders(reminders) {
+  try {
+    localStorage.setItem(getRemindersKey(), JSON.stringify(reminders));
+  } catch (e) {}
+}
+
 // ==========================================
 // 2. APPLICATION STATE
 // ==========================================
@@ -160,9 +180,11 @@ let state = {
   currentYear: 2026,
   currentMonth: 9, // 0-indexed: 9 = October
   activeTab: 'tab-list',
-  currentMainView: 'home', // 'home' | 'notes' | 'calendar'
-  selectedCalendarDate: null,
+  currentMainView: 'home', // 'home' | 'notes' | 'reminders'
   selectedMemoTag: 'General',
+  reminderFilter: 'all', // 'all' | 'pending' | 'completed'
+  reminderSelectedCategory: 'bills',
+  reminderSelectedFrequency: 'Once',
   categoryFilter: 'all',
   searchQuery: '',
   modalSelectedCategory: 'rapido',
@@ -174,7 +196,6 @@ let state = {
 const today = new Date();
 state.currentYear = today.getFullYear();
 state.currentMonth = today.getMonth();
-state.selectedCalendarDate = getFormattedDate(today);
 
 // ==========================================
 // 3. SAMPLE DEMO COMMUTE DATA GENERATOR
@@ -984,8 +1005,8 @@ function refreshAllViews() {
   renderAnalytics();
   if (state.currentMainView === 'notes') {
     renderNotesView();
-  } else if (state.currentMainView === 'calendar') {
-    renderCalendarView();
+  } else if (state.currentMainView === 'reminders') {
+    renderRemindersView();
   }
   if (window.AppIcons && window.AppIcons.cleanDomEmojis) {
     window.AppIcons.cleanDomEmojis();
@@ -1017,11 +1038,11 @@ function switchMainView(viewName) {
   // Toggle main views
   const homeView = document.getElementById('mainHomeView');
   const notesView = document.getElementById('mainNotesView');
-  const calendarView = document.getElementById('mainCalendarView');
+  const remindersView = document.getElementById('mainRemindersView');
 
   if (homeView) homeView.style.display = viewName === 'home' ? 'block' : 'none';
   if (notesView) notesView.style.display = viewName === 'notes' ? 'block' : 'none';
-  if (calendarView) calendarView.style.display = viewName === 'calendar' ? 'block' : 'none';
+  if (remindersView) remindersView.style.display = viewName === 'reminders' ? 'block' : 'none';
 
   if (viewName === 'home') {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1029,8 +1050,8 @@ function switchMainView(viewName) {
     renderExpensesList();
   } else if (viewName === 'notes') {
     renderNotesView();
-  } else if (viewName === 'calendar') {
-    renderCalendarView();
+  } else if (viewName === 'reminders') {
+    renderRemindersView();
   }
 
   if (window.AppIcons && window.AppIcons.cleanDomEmojis) {
@@ -1172,153 +1193,234 @@ function handleDeleteMemo(id) {
 }
 
 // ------------------------------------------
-// CALENDAR VIEW LOGIC
+// REMINDERS VIEW LOGIC
 // ------------------------------------------
-function renderCalendarView() {
-  const year = state.currentYear;
-  const month = state.currentMonth; // 0-indexed
+function renderRemindersView() {
+  const reminders = loadReminders();
+  const badgeEl = document.getElementById('remindersCountBadge');
+  const allCountEl = document.getElementById('remFilterAllCount');
+  const pendingCountEl = document.getElementById('remFilterPendingCount');
+  const completedCountEl = document.getElementById('remFilterCompletedCount');
+  const listContainer = document.getElementById('remindersListContainer');
+  const currencyPrefix = document.getElementById('reminderCurrencyPrefix');
 
-  // Month Title
-  const monthTitle = document.getElementById('calCurrentMonthTitle');
-  if (monthTitle) {
-    monthTitle.textContent = `${MONTH_NAMES[month]} ${year}`;
+  if (currencyPrefix) {
+    currencyPrefix.textContent = state.settings.currency || '₹';
   }
 
-  // Calculate monthly stats for calendar
-  const stats = calculateMonthStats();
-  const calMonthTotalBadge = document.getElementById('calendarMonthTotalBadge');
-  if (calMonthTotalBadge) {
-    calMonthTotalBadge.textContent = `${formatCurrency(stats.totalSpent)} this month`;
+  // Pre-fill today's date if empty
+  const dateInput = document.getElementById('reminderDueDateInput');
+  if (dateInput && !dateInput.value) {
+    dateInput.value = getFormattedDate();
   }
-
-  // If no selectedCalendarDate or it doesn't belong to this month, set default
-  if (!state.selectedCalendarDate) {
-    state.selectedCalendarDate = getFormattedDate();
-  }
-
-  // Days in month
-  const totalDays = new Date(year, month + 1, 0).getDate();
-  const firstDayIndex = new Date(year, month, 1).getDay(); // 0 = Sunday
-
-  // Aggregate expenses for this month by date: 'YYYY-MM-DD' -> { total: number, items: [] }
-  const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
-  const daySpendMap = {};
-
-  state.expenses.forEach(item => {
-    if (item.date && item.date.startsWith(monthPrefix)) {
-      if (!daySpendMap[item.date]) {
-        daySpendMap[item.date] = { total: 0, items: [] };
-      }
-      daySpendMap[item.date].total += Number(item.amount) || 0;
-      daySpendMap[item.date].items.push(item);
-    }
-  });
 
   const todayStr = getFormattedDate();
-  const daysGrid = document.getElementById('calendarDaysGrid');
-  if (!daysGrid) return;
-
-  let gridHtml = '';
-
-  // Leading empty cells
-  for (let i = 0; i < firstDayIndex; i++) {
-    gridHtml += `<div class="cal-day-cell is-empty"></div>`;
-  }
-
-  // Month day cells
-  for (let d = 1; d <= totalDays; d++) {
-    const dateStr = `${monthPrefix}-${String(d).padStart(2, '0')}`;
-    const dayData = daySpendMap[dateStr];
-    const isToday = (dateStr === todayStr);
-    const isSelected = (dateStr === state.selectedCalendarDate);
-
-    let cellClasses = ['cal-day-cell'];
-    if (isToday) cellClasses.push('is-today');
-    if (isSelected) cellClasses.push('is-selected');
-
-    let spendBadge = '';
-    if (dayData && dayData.total > 0) {
-      const isHigh = dayData.total > 200;
-      spendBadge = `<span class="cal-day-spend ${isHigh ? 'high-spend' : ''}">${formatCurrency(dayData.total)}</span>`;
-    }
-
-    gridHtml += `
-      <div class="${cellClasses.join(' ')}" data-date="${dateStr}" onclick="handleCalendarDateClick('${dateStr}')">
-        <span class="cal-day-num">${d}</span>
-        ${spendBadge}
-      </div>
-    `;
-  }
-
-  daysGrid.innerHTML = gridHtml;
-
-  // Render Selected Day Details
-  renderSelectedDayCard(state.selectedCalendarDate);
-}
-
-function handleCalendarDateClick(dateStr) {
-  state.selectedCalendarDate = dateStr;
-  
-  // Update selected class in DOM directly for instant response
-  document.querySelectorAll('.cal-day-cell').forEach(cell => {
-    cell.classList.toggle('is-selected', cell.getAttribute('data-date') === dateStr);
-  });
-
-  renderSelectedDayCard(dateStr);
-}
-
-function renderSelectedDayCard(dateStr) {
-  const card = document.getElementById('selectedDayCard');
-  if (!card) return;
-
-  const labelEl = document.getElementById('selectedDayLabel');
-  const badgeEl = document.getElementById('selectedDayTotalBadge');
-  const listEl = document.getElementById('selectedDayExpensesList');
-
-  // Format date header: e.g. "Thursday, Nov 12, 2026"
-  const dateParts = (dateStr || getFormattedDate()).split('-');
-  const dateObj = new Date(Number(dateParts[0]), Number(dateParts[1]) - 1, Number(dateParts[2]));
-  const formattedDayStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-
-  if (labelEl) labelEl.textContent = formattedDayStr;
-
-  // Find expenses for this day
-  const dayExpenses = state.expenses.filter(item => item.date === dateStr);
-  const dayTotal = dayExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  const pendingReminders = reminders.filter(r => !r.completed);
+  const completedReminders = reminders.filter(r => r.completed);
 
   if (badgeEl) {
-    badgeEl.textContent = `${formatCurrency(dayTotal)} spent (${dayExpenses.length} ${dayExpenses.length === 1 ? 'item' : 'items'})`;
+    const dueCount = pendingReminders.length;
+    badgeEl.textContent = `${dueCount} ${dueCount === 1 ? 'due' : 'due'}`;
+  }
+  if (allCountEl) allCountEl.textContent = reminders.length;
+  if (pendingCountEl) pendingCountEl.textContent = pendingReminders.length;
+  if (completedCountEl) completedCountEl.textContent = completedReminders.length;
+
+  if (!listContainer) return;
+
+  // Filter reminders
+  let displayList = reminders;
+  if (state.reminderFilter === 'pending') {
+    displayList = pendingReminders;
+  } else if (state.reminderFilter === 'completed') {
+    displayList = completedReminders;
   }
 
-  if (listEl) {
-    if (dayExpenses.length === 0) {
-      listEl.innerHTML = `
-        <div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.84rem;">
-          No expenses logged on this day. Tap "+ Log for this Day" to add one!
+  // Sort: pending first, then by dueDate asc, then completed
+  displayList.sort((a, b) => {
+    if (a.completed !== b.completed) {
+      return a.completed ? 1 : -1;
+    }
+    return (a.dueDate || '').localeCompare(b.dueDate || '');
+  });
+
+  if (displayList.length === 0) {
+    let emptyMsg = 'No reminders created yet.';
+    if (state.reminderFilter === 'pending') emptyMsg = 'No pending reminders. All caught up!';
+    if (state.reminderFilter === 'completed') emptyMsg = 'No completed reminders yet.';
+
+    listContainer.innerHTML = `
+      <div class="empty-state" style="padding: 36px 16px;">
+        <div class="empty-state-icon">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+          </svg>
         </div>
-      `;
-    } else {
-      listEl.innerHTML = dayExpenses.map(item => {
-        const cat = CATEGORIES[item.category] || CATEGORIES.other;
-        return `
-          <div class="expense-note-item" onclick="openEditModal('${escapeHtml(item.id)}')">
-            <div class="expense-note-left">
-              <div class="expense-note-icon ${escapeHtml(cat.badgeClass || 'badge-other')}">
-                ${cat.icon}
-              </div>
-              <div class="expense-note-info">
-                <span class="expense-note-text">${escapeHtml(item.note || cat.name)}</span>
-                <span class="expense-note-meta">${escapeHtml(cat.name)} ${item.time ? '• ' + escapeHtml(item.time) : ''} ${item.paymentMode ? '• ' + escapeHtml(item.paymentMode) : ''}</span>
-              </div>
+        <h3>${escapeHtml(emptyMsg)}</h3>
+        <p class="empty-state-desc">Set alerts for Metro cards, bus passes, Wi-Fi recharge, or pending spend dues above.</p>
+      </div>
+    `;
+    return;
+  }
+
+  listContainer.innerHTML = displayList.map(item => {
+    const isCompleted = Boolean(item.completed);
+    const cat = CATEGORIES[item.category] || CATEGORIES.bills || CATEGORIES.other;
+    const catIcon = cat.icon || (window.AppIcons ? window.AppIcons.get(item.category || 'bills', 20) : '');
+    const badgeClass = cat.badgeClass || 'badge-other';
+
+    // Compute status
+    let statusClass = 'status-upcoming';
+    let statusText = 'Upcoming';
+    let cardExtraClass = '';
+
+    if (isCompleted) {
+      statusClass = 'status-completed';
+      statusText = 'Completed';
+      cardExtraClass = 'is-completed';
+    } else if (item.dueDate) {
+      const todayDate = new Date(todayStr);
+      const dueDate = new Date(item.dueDate);
+      const diffTime = dueDate.getTime() - todayDate.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) {
+        statusClass = 'status-overdue';
+        statusText = `Overdue by ${Math.abs(diffDays)}d`;
+        cardExtraClass = 'is-overdue';
+      } else if (diffDays === 0) {
+        statusClass = 'status-due-today';
+        statusText = 'Due Today!';
+        cardExtraClass = 'is-due-today';
+      } else if (diffDays === 1) {
+        statusClass = 'status-due-today';
+        statusText = 'Due Tomorrow';
+      } else {
+        statusClass = 'status-upcoming';
+        statusText = `In ${diffDays} days`;
+      }
+    }
+
+    const formattedDueDate = formatDateDisplay(item.dueDate);
+
+    return `
+      <div class="reminder-card ${cardExtraClass}">
+        <div class="reminder-card-left">
+          <button type="button" class="reminder-check-btn" onclick="handleToggleReminder('${escapeHtml(item.id)}')" title="${isCompleted ? 'Mark pending' : 'Mark completed'}">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <div class="reminder-card-icon ${badgeClass}">
+            ${catIcon}
+          </div>
+          <div class="reminder-details">
+            <div class="reminder-title-row">
+              <span class="reminder-title-text">${escapeHtml(item.title)}</span>
+              <span class="status-pill ${statusClass}">${escapeHtml(statusText)}</span>
             </div>
-            <div class="expense-note-amount">
-              ${formatCurrency(item.amount)}
+            <div class="reminder-meta-row">
+              <span>📅 ${formattedDueDate}</span>
+              ${item.frequency ? `<span class="reminder-repeat-badge">🔁 ${escapeHtml(item.frequency)}</span>` : ''}
+              <span>• ${escapeHtml(cat.name || 'Expense')}</span>
             </div>
           </div>
-        `;
-      }).join('');
-    }
+        </div>
+
+        <div class="reminder-card-right">
+          ${item.amount ? `<span class="reminder-amount-val">${formatCurrency(item.amount)}</span>` : ''}
+          <div class="reminder-actions">
+            ${!isCompleted ? `
+              <button type="button" class="btn-log-expense" onclick="handleLogReminderAsExpense('${escapeHtml(item.id)}')" title="Record as logged expense">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>Log</span>
+              </button>
+            ` : ''}
+            <button type="button" class="reminder-delete-btn" onclick="handleDeleteReminder('${escapeHtml(item.id)}')" title="Delete reminder">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function handleSaveReminder(e) {
+  if (e) e.preventDefault();
+  const titleInput = document.getElementById('reminderTitleInput');
+  const amountInput = document.getElementById('reminderAmountInput');
+  const dateInput = document.getElementById('reminderDueDateInput');
+
+  const title = (titleInput ? titleInput.value : '').trim();
+  if (!title) {
+    showToast('Please enter a reminder title', 'alert');
+    if (titleInput) titleInput.focus();
+    return;
   }
+
+  const dueDate = (dateInput ? dateInput.value : '') || getFormattedDate();
+  const amount = amountInput && amountInput.value ? parseFloat(amountInput.value) : null;
+  const category = state.reminderSelectedCategory || 'bills';
+  const frequency = state.reminderSelectedFrequency || 'Once';
+
+  const newReminder = {
+    id: 'rem_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+    title,
+    dueDate,
+    amount,
+    category,
+    frequency,
+    completed: false,
+    createdAt: new Date().toISOString()
+  };
+
+  const reminders = loadReminders();
+  reminders.unshift(newReminder);
+  saveReminders(reminders);
+
+  if (titleInput) titleInput.value = '';
+  if (amountInput) amountInput.value = '';
+  renderRemindersView();
+  showToast('Reminder added!', 'bell');
+}
+
+function handleToggleReminder(id) {
+  const reminders = loadReminders();
+  const reminder = reminders.find(r => r.id === id);
+  if (!reminder) return;
+
+  reminder.completed = !reminder.completed;
+  reminder.completedAt = reminder.completed ? new Date().toISOString() : null;
+
+  saveReminders(reminders);
+  renderRemindersView();
+  showToast(reminder.completed ? 'Reminder marked done!' : 'Reminder reopened', 'check');
+}
+
+function handleDeleteReminder(id) {
+  let reminders = loadReminders();
+  reminders = reminders.filter(r => r.id !== id);
+  saveReminders(reminders);
+  renderRemindersView();
+  showToast('Reminder deleted', 'trash');
+}
+
+function handleLogReminderAsExpense(id) {
+  const reminders = loadReminders();
+  const rem = reminders.find(r => r.id === id);
+  if (!rem) return;
+
+  // Open the expense modal prefilled with this reminder's details!
+  openExpenseModal(rem.category || 'bills', rem.amount || null, rem.dueDate || getFormattedDate());
+
+  // Prefill route/note with reminder title
+  const noteInput = document.getElementById('formNote');
+  if (noteInput) {
+    noteInput.value = rem.title;
+  }
+
+  // Switch to home view so user sees their logged expenses once saved
+  switchMainView('home');
 }
 
 // ==========================================
@@ -1521,7 +1623,7 @@ function setupEventListeners() {
     });
   });
 
-  // Floating Bottom Navigator (Home, Notes, Calendar)
+  // Floating Bottom Navigator (Home, Notes, Reminders)
   document.querySelectorAll('.bottom-nav-item').forEach(btn => {
     btn.addEventListener('click', () => {
       const view = btn.getAttribute('data-view');
@@ -1566,31 +1668,70 @@ function setupEventListeners() {
     saveMemoBtn.addEventListener('click', handleSaveMemo);
   }
 
-  // Calendar Navigation
-  const calPrevBtn = document.getElementById('calPrevMonthBtn');
-  if (calPrevBtn) calPrevBtn.addEventListener('click', goToPrevMonth);
-
-  const calNextBtn = document.getElementById('calNextMonthBtn');
-  if (calNextBtn) calNextBtn.addEventListener('click', goToNextMonth);
-
-  const calJumpTodayBtn = document.getElementById('calJumpTodayBtn');
-  if (calJumpTodayBtn) {
-    calJumpTodayBtn.addEventListener('click', () => {
-      const now = new Date();
-      state.currentYear = now.getFullYear();
-      state.currentMonth = now.getMonth();
-      state.selectedCalendarDate = getFormattedDate(now);
-      refreshAllViews();
-    });
+  // Reminders Form & Controls
+  const reminderForm = document.getElementById('reminderForm');
+  if (reminderForm) {
+    reminderForm.addEventListener('submit', handleSaveReminder);
   }
 
-  // Calendar Log for this day button
-  const calLogExpenseBtn = document.getElementById('calLogExpenseBtn');
-  if (calLogExpenseBtn) {
-    calLogExpenseBtn.addEventListener('click', () => {
-      openExpenseModal('rapido', null, state.selectedCalendarDate || getFormattedDate());
+  // Reminder Repeat Frequency Selector
+  document.querySelectorAll('#reminderFreqSelector .freq-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#reminderFreqSelector .freq-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.reminderSelectedFrequency = btn.getAttribute('data-freq') || 'Once';
     });
-  }
+  });
+
+  // Reminder Category Selector
+  document.querySelectorAll('#reminderCatSelector .rem-cat-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#reminderCatSelector .rem-cat-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.reminderSelectedCategory = btn.getAttribute('data-cat') || 'bills';
+    });
+  });
+
+  // Reminder Filter Tabs (All / Pending / Completed)
+  document.querySelectorAll('.rem-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.rem-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.reminderFilter = btn.getAttribute('data-filter') || 'all';
+      renderRemindersView();
+    });
+  });
+
+  // Reminder Quick Preset Suggestions
+  document.querySelectorAll('.preset-rem-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const title = btn.getAttribute('data-title');
+      const amt = btn.getAttribute('data-amt');
+      const cat = btn.getAttribute('data-cat');
+      const freq = btn.getAttribute('data-freq');
+
+      const titleInput = document.getElementById('reminderTitleInput');
+      const amtInput = document.getElementById('reminderAmountInput');
+      if (titleInput && title) titleInput.value = title;
+      if (amtInput && amt) amtInput.value = amt;
+
+      if (cat) {
+        state.reminderSelectedCategory = cat;
+        document.querySelectorAll('#reminderCatSelector .rem-cat-chip').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-cat') === cat);
+        });
+      }
+
+      if (freq) {
+        state.reminderSelectedFrequency = freq;
+        document.querySelectorAll('#reminderFreqSelector .freq-btn').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-freq') === freq);
+        });
+      }
+
+      if (titleInput) titleInput.focus();
+    });
+  });
 
   // User Profile Dropdown & Session Events
   setupUserProfileEvents();
@@ -1605,7 +1746,9 @@ function setupEventListeners() {
 
 // Global function exports for inline onclick listeners
 window.handleDeleteMemo = handleDeleteMemo;
-window.handleCalendarDateClick = handleCalendarDateClick;
+window.handleToggleReminder = handleToggleReminder;
+window.handleDeleteReminder = handleDeleteReminder;
+window.handleLogReminderAsExpense = handleLogReminderAsExpense;
 window.openEditModal = editExpense;
 window.switchMainView = switchMainView;
 
